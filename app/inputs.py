@@ -9,7 +9,7 @@ from honeybee.model import Model
 from honeybee_vtk.model import Model as VTKModel
 from pollination_streamlit_viewer import viewer
 from pollination_streamlit_io import get_hbjson
-
+from loads import apply_lighting_factor
 
 from geometry import geometry_parameters, generate_building, generate_honeybee_model, clear_temp_folder, create_skylights
 
@@ -73,6 +73,10 @@ def initialize():
         st.session_state.skylight_y_dimension = 0.0
     if 'skylight_operable' not in st.session_state:
         st.session_state.skylight_operable = False
+    if 'lighting_factor' not in st.session_state:
+        st.session_state.lighting_factor = None
+    if 'original_lpd' not in st.session_state:
+        st.session_state.original_lpds = {}
 
 
     # imulation settings
@@ -178,6 +182,7 @@ def get_model_inputs(host: str, container):
 
 
 
+
 def get_ee_inputs(host: str, container):
     # get the inputs that only affect the display and do not require re-simulation
     
@@ -235,6 +240,20 @@ def get_ee_inputs(host: str, container):
         st.session_state.sql_results = None  # reset to have results recomputed
 
     # Measure # 4
+    col1, col2 = container.columns([1, 2])
+    ee_lighting_factor_disabled= True
+    ee_lighting_factor = 1.0
+    if col1.checkbox(label='Lighting factor', value=False, help= "A multiplication factor for all the lighting gains the building."):
+        ee_lighting_factor_disabled= False
+    in_lighting_factor = col2.number_input(
+        label='Lighting factor', min_value=0.0, max_value=3.0, value=ee_lighting_factor, step=0.05, disabled = ee_lighting_factor_disabled)
+    if in_lighting_factor != st.session_state.lighting_factor:
+        st.session_state.lighting_factor = in_lighting_factor
+        for room in st.session_state.hb_model.rooms:
+            apply_lighting_factor(room, st.session_state.lighting_factor)
+        st.session_state.sql_results = None  # reset to have results recomputed
+
+    # Measure # 5
     col1, col2 = container.columns([1, 2])
     ee_shading_disabled= True
     ee_shading_value = 2.5

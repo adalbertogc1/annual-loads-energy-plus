@@ -2,3 +2,4 @@ venv/
 Users/
 app/data/
 .DS_Store
+app/__pycache__

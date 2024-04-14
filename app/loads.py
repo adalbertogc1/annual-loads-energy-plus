@@ -9,6 +9,16 @@ from honeybee_energy.lib.programtypes import program_type_by_identifier
 from honeybee_energy.lib.programtypes import BUILDING_TYPES
 from honeybee.search import filter_array_by_keywords
 
+
+def apply_lighting_factor(room, lighting_factor):
+    if room.properties.energy.program_type.lighting:
+        new_program_type = room.properties.energy.program_type.duplicate()
+        if room.identifier not in st.session_state.original_lpds:
+            st.session_state.original_lpds[room.identifier] = float(room.properties.energy.program_type.lighting.watts_per_area)
+        
+        new_program_type.lighting.watts_per_area = lighting_factor*(st.session_state.original_lpds[room.identifier])
+        room.properties.energy.program_type = new_program_type
+
 def update_properties_dict(room, properties_dict, property_name, parent_key=''):
     updated_dict = copy.deepcopy(properties_dict)  # Use deepcopy to handle nested dicts correctly
     for key, value in properties_dict.items():

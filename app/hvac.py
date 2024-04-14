@@ -1,7 +1,5 @@
 from honeybee_energy.altnumber import Autosize
 from honeybee.altnumber import NoLimit
-
-import uuid
 import copy
 
 ROOM_EQUIPMENT= ("ForcedAirFurnace","PSZ","PTAC","PVAV","VAV","FCUwithDOAS","RadiantwithDOAS","VRFwithDOAS","WSHPwithDOAS","Baseboard","EvaporativeCooler",
@@ -13,7 +11,6 @@ def get_ForcedAirFurnace(st, room):
     # Instantiate the ForcedAirFurnace system with a unique identifier
     identifier = f"ForcedAirFurnace-{room.identifier}"
     standard_system = ForcedAirFurnace(identifier)
-    unique_key_suffix = uuid.uuid4().hex[:8]  # Take first 8 characters for brevity
 
     # Selectbox for vintage
     vintage_options = ['DOE_Ref_Pre_1980', 'DOE_Ref_1980_2004', 'ASHRAE_2004', 'ASHRAE_2007', 'ASHRAE_2010', 'ASHRAE_2013', 'ASHRAE_2016', 'ASHRAE_2019']
@@ -22,7 +19,7 @@ def get_ForcedAirFurnace(st, room):
 
     # Selectbox for equipment_type
     equipment_type_options = ['Furnace', 'Furnace_Electric']
-    equipment_type = st.selectbox("Equipment Type", options=equipment_type_options, index=equipment_type_options.index(standard_system.equipment_type if standard_system.equipment_type else equipment_type_options[0]), key=f"equipment_subtype-{room.identifier}-{unique_key_suffix}")
+    equipment_type = st.selectbox("Equipment Type", options=equipment_type_options, index=equipment_type_options.index(standard_system.equipment_type if standard_system.equipment_type else equipment_type_options[0]), key=f"equipment_subtype-{room.identifier}-ForcedAirFurnace")
     standard_system.equipment_type = equipment_type
 
     # Selectbox for economizer_type
@@ -46,7 +43,6 @@ def get_ForcedAirFurnace(st, room):
 
 def get_PSZSystem(st, room):
     from honeybee_energy.hvac.allair.psz import PSZ
-    unique_key_suffix = uuid.uuid4().hex[:8]
     # Instantiate the PSZ system with a unique identifier
     identifier = f"PSZ-{room.identifier}"
     psz_system = PSZ(identifier)
@@ -58,7 +54,7 @@ def get_PSZSystem(st, room):
 
     # Selectbox for equipment_type
     equipment_type_options = ['PSZAC_ElectricBaseboard', 'PSZAC_BoilerBaseboard', 'PSZAC_DHWBaseboard', 'PSZAC_GasHeaters', 'PSZAC_ElectricCoil', 'PSZAC_GasCoil', 'PSZAC_Boiler', 'PSZAC_ASHP', 'PSZAC_DHW', 'PSZAC', 'PSZAC_DCW_ElectricBaseboard', 'PSZAC_DCW_BoilerBaseboard', 'PSZAC_DCW_GasHeaters', 'PSZAC_DCW_ElectricCoil', 'PSZAC_DCW_GasCoil', 'PSZAC_DCW_Boiler', 'PSZAC_DCW_ASHP', 'PSZAC_DCW_DHW', 'PSZAC_DCW', 'PSZHP']
-    equipment_type = st.selectbox("Equipment Type", options=equipment_type_options, index=equipment_type_options.index(psz_system.equipment_type if psz_system.equipment_type else equipment_type_options[0]), key=f"equipment_subtype-{room.identifier}-{unique_key_suffix}")
+    equipment_type = st.selectbox("Equipment Type", options=equipment_type_options, index=equipment_type_options.index(psz_system.equipment_type if psz_system.equipment_type else equipment_type_options[0]), key=f"equipment_subtype-{room.identifier}-PSZSystem")
     psz_system.equipment_type = equipment_type
 
     # Selectbox for economizer_type
@@ -82,8 +78,6 @@ def get_PSZSystem(st, room):
 
 def get_PTACSystem(st, room):
     from honeybee_energy.hvac.allair.ptac import PTAC
-    unique_key_suffix = uuid.uuid4().hex[:8]  # Take first 8 characters for brevity
-
     # Instantiate the PTAC system with a unique identifier
     identifier = f"PTAC-{room.identifier}"
     ptac_system = PTAC(identifier)
@@ -95,15 +89,13 @@ def get_PTACSystem(st, room):
 
     # Selectbox for equipment_type
     equipment_type_options = ['PTAC_ElectricBaseboard', 'PTAC_BoilerBaseboard', 'PTAC_DHWBaseboard', 'PTAC_GasHeaters', 'PTAC_ElectricCoil', 'PTAC_GasCoil', 'PTAC_Boiler', 'PTAC_ASHP', 'PTAC_DHW', 'PTAC', 'PTHP']
-    equipment_type = st.selectbox("Equipment Type", options=equipment_type_options, index=equipment_type_options.index(ptac_system.equipment_type if ptac_system.equipment_type else equipment_type_options[0]), key=f"equipment_subtype-{room.identifier}_{unique_key_suffix}")
-    
+    equipment_type = st.selectbox("Equipment Type", options=equipment_type_options, index=equipment_type_options.index(ptac_system.equipment_type if ptac_system.equipment_type else equipment_type_options[0]), key=f"equipment_subtype-{room.identifier}-PTAC")
     ptac_system.equipment_type = equipment_type
 
     return ptac_system
 
 def get_PVAVSystem(st, room):
     from honeybee_energy.hvac.allair.pvav import PVAV
-    unique_key_suffix = uuid.uuid4().hex[:8]  # Take first 8 characters for brevity
 
     # Instantiate the PVAV system with a unique identifier
     identifier = f"PVAV-{room.identifier}"
@@ -116,7 +108,7 @@ def get_PVAVSystem(st, room):
 
     # Selectbox for equipment_type
     equipment_type_options = ['PVAV_Boiler', 'PVAV_ASHP', 'PVAV_DHW', 'PVAV_PFP', 'PVAV_BoilerElectricReheat']
-    equipment_type = st.selectbox("Equipment Type", options=equipment_type_options, index=equipment_type_options.index(pvav_system.equipment_type if pvav_system.equipment_type else equipment_type_options[0]), key=f"equipment_subtype-{room.identifier}-{unique_key_suffix}")
+    equipment_type = st.selectbox("Equipment Type", options=equipment_type_options, index=equipment_type_options.index(pvav_system.equipment_type if pvav_system.equipment_type else equipment_type_options[0]), key=f"equipment_subtype-{room.identifier}-PVAVSystem")
     pvav_system.equipment_type = equipment_type
 
     # Selectbox for economizer_type
@@ -140,7 +132,6 @@ def get_PVAVSystem(st, room):
 
 def get_VAVSystem(st, room):
     from honeybee_energy.hvac.allair.vav import VAV
-    unique_key_suffix = uuid.uuid4().hex[:8]  # Take first 8 characters for brevity
 
     # Instantiate the VAV system with a unique identifier
     identifier = f"VAV-{room.identifier}"
@@ -153,7 +144,7 @@ def get_VAVSystem(st, room):
 
     # Selectbox for equipment_type
     equipment_type_options = ['VAV_Chiller_Boiler', 'VAV_Chiller_ASHP', 'VAV_Chiller_DHW', 'VAV_Chiller_PFP', 'VAV_Chiller_GasCoil', 'VAV_ACChiller_Boiler', 'VAV_ACChiller_ASHP', 'VAV_ACChiller_DHW', 'VAV_ACChiller_PFP', 'VAV_ACChiller_GasCoil', 'VAV_DCW_Boiler', 'VAV_DCW_ASHP', 'VAV_DCW_DHW', 'VAV_DCW_PFP', 'VAV_DCW_GasCoil']
-    equipment_type = st.selectbox("Equipment Type", options=equipment_type_options, index=equipment_type_options.index(vav_system.equipment_type if vav_system.equipment_type else equipment_type_options[0]), key=f"equipment_subtype-{room.identifier}-{unique_key_suffix}")
+    equipment_type = st.selectbox("Equipment Type", options=equipment_type_options, index=equipment_type_options.index(vav_system.equipment_type if vav_system.equipment_type else equipment_type_options[0]), key=f"equipment_subtype-{room.identifier}-VAVSystem")
     vav_system.equipment_type = equipment_type
 
     # Selectbox for economizer_type
@@ -177,7 +168,6 @@ def get_VAVSystem(st, room):
 
 def get_FCUwithDOASSystem(st, room):
     from honeybee_energy.hvac.doas.fcu import FCUwithDOAS
-    unique_key_suffix = uuid.uuid4().hex[:8]  # Take first 8 characters for brevity
 
     # Instantiate the FCUwithDOAS system with a unique identifier
     identifier = f"FCUwithDOAS-{room.identifier}"
@@ -197,7 +187,7 @@ def get_FCUwithDOASSystem(st, room):
         'DOAS_FCU_DCW_Boiler', 'DOAS_FCU_DCW_ASHP', 'DOAS_FCU_DCW_DHW',
         'DOAS_FCU_DCW_ElectricBaseboard', 'DOAS_FCU_DCW_GasHeaters', 'DOAS_FCU_DCW'
     ]
-    equipment_type = st.selectbox("Equipment Type", options=equipment_type_options, index=equipment_type_options.index(fcuwithdoas_system.equipment_type if fcuwithdoas_system.equipment_type else equipment_type_options[0]), key=f"equipment_subtype-{room.identifier}-{unique_key_suffix}")
+    equipment_type = st.selectbox("Equipment Type", options=equipment_type_options, index=equipment_type_options.index(fcuwithdoas_system.equipment_type if fcuwithdoas_system.equipment_type else equipment_type_options[0]), key=f"equipment_subtype-{room.identifier}-FCUwithDOASSystem")
     fcuwithdoas_system.equipment_type = equipment_type
 
     # Number_input for sensible_heat_recovery
@@ -260,7 +250,6 @@ def get_VRFwithDOASSystem(st, room):
 
 def get_RadiantwithDOASSystem(st, room):
     from honeybee_energy.hvac.doas.radiant import RadiantwithDOAS
-    unique_key_suffix = uuid.uuid4().hex[:8]  # Take first 8 characters for brevity
 
     # Instantiate the RadiantwithDOAS system with a unique identifier
     identifier = f"RadiantwithDOAS-{room.identifier}"
@@ -277,7 +266,7 @@ def get_RadiantwithDOASSystem(st, room):
         'DOAS_Radiant_ACChiller_Boiler', 'DOAS_Radiant_ACChiller_ASHP', 'DOAS_Radiant_ACChiller_DHW',
         'DOAS_Radiant_DCW_Boiler', 'DOAS_Radiant_DCW_ASHP', 'DOAS_Radiant_DCW_DHW'
     ]
-    equipment_type = st.selectbox("Equipment Type", options=equipment_type_options, index=equipment_type_options.index(radiantwithdoas_system.equipment_type if radiantwithdoas_system.equipment_type else equipment_type_options[0]), key=f"equipment_subtype-{room.identifier}-{unique_key_suffix}")
+    equipment_type = st.selectbox("Equipment Type", options=equipment_type_options, index=equipment_type_options.index(radiantwithdoas_system.equipment_type if radiantwithdoas_system.equipment_type else equipment_type_options[0]), key=f"equipment_subtype-{room.identifier}-RadiantwithDOASSystem")
     radiantwithdoas_system.equipment_type = equipment_type
 
     # Number_input for sensible_heat_recovery
@@ -313,7 +302,6 @@ def get_RadiantwithDOASSystem(st, room):
 
 def get_WSHPwithDOASSystem(st, room):
     from honeybee_energy.hvac.doas.wshp import WSHPwithDOAS
-    unique_key_suffix = uuid.uuid4().hex[:8]  # Take first 8 characters for brevity
 
     # Instantiate the WSHPwithDOAS system with a unique identifier
     identifier = f"WSHPwithDOAS-{room.identifier}"
@@ -328,7 +316,7 @@ def get_WSHPwithDOASSystem(st, room):
     equipment_type_options = [
         'DOAS_WSHP_FluidCooler_Boiler', 'DOAS_WSHP_CoolingTower_Boiler', 'DOAS_WSHP_GSHP', 'DOAS_WSHP_DCW_DHW'
     ]
-    equipment_type = st.selectbox("Equipment Type", options=equipment_type_options, index=equipment_type_options.index(wshpwithdoas_system.equipment_type if wshpwithdoas_system.equipment_type else equipment_type_options[0]), key=f"equipment_subtype-{room.identifier}-{unique_key_suffix}")
+    equipment_type = st.selectbox("Equipment Type", options=equipment_type_options, index=equipment_type_options.index(wshpwithdoas_system.equipment_type if wshpwithdoas_system.equipment_type else equipment_type_options[0]), key=f"equipment_subtype-{room.identifier}-WSHPwithDOASSystem")
     wshpwithdoas_system.equipment_type = equipment_type
 
     # Number_input for sensible_heat_recovery
@@ -351,7 +339,6 @@ def get_WSHPwithDOASSystem(st, room):
 
 def get_BaseboardSystem(st, room):
     from honeybee_energy.hvac.heatcool.baseboard import Baseboard
-    unique_key_suffix = uuid.uuid4().hex[:8]  # Take first 8 characters for brevity
 
     # Instantiate the Baseboard system with a unique identifier
     identifier = f"Baseboard-{room.identifier}"
@@ -364,14 +351,13 @@ def get_BaseboardSystem(st, room):
 
     # Selectbox for equipment_type
     equipment_type_options = ['ElectricBaseboard', 'BoilerBaseboard', 'ASHPBaseboard', 'DHWBaseboard']
-    equipment_type = st.selectbox("Equipment Type", options=equipment_type_options, index=equipment_type_options.index(baseboard_system.equipment_type if baseboard_system.equipment_type else equipment_type_options[0]), key=f"equipment_subtype-{room.identifier}-{unique_key_suffix}")
+    equipment_type = st.selectbox("Equipment Type", options=equipment_type_options, index=equipment_type_options.index(baseboard_system.equipment_type if baseboard_system.equipment_type else equipment_type_options[0]), key=f"equipment_subtype-{room.identifier}-BaseboardSystem")
     baseboard_system.equipment_type = equipment_type
 
     return baseboard_system
 
 def get_EvaporativeCoolerSystem(st, room):
     from honeybee_energy.hvac.heatcool.evapcool import EvaporativeCooler
-    unique_key_suffix = uuid.uuid4().hex[:8]  # Take first 8 characters for brevity
 
     # Instantiate the EvaporativeCooler system with a unique identifier
     identifier = f"EvaporativeCooler-{room.identifier}"
@@ -387,14 +373,13 @@ def get_EvaporativeCoolerSystem(st, room):
         'EvapCoolers_ElectricBaseboard', 'EvapCoolers_BoilerBaseboard', 'EvapCoolers_ASHPBaseboard', 
         'EvapCoolers_DHWBaseboard', 'EvapCoolers_Furnace', 'EvapCoolers_UnitHeaters', 'EvapCoolers'
     ]
-    equipment_type = st.selectbox("Equipment Type", options=equipment_type_options, index=equipment_type_options.index(evaporative_cooler_system.equipment_type if evaporative_cooler_system.equipment_type else equipment_type_options[0]), key=f"equipment_subtype-{room.identifier}-{unique_key_suffix}")
+    equipment_type = st.selectbox("Equipment Type", options=equipment_type_options, index=equipment_type_options.index(evaporative_cooler_system.equipment_type if evaporative_cooler_system.equipment_type else equipment_type_options[0]), key=f"equipment_subtype-{room.identifier}-EvaporativeCoolerSystem")
     evaporative_cooler_system.equipment_type = equipment_type
 
     return evaporative_cooler_system
 
 def get_FCUSystem(st, room):
     from honeybee_energy.hvac.heatcool.fcu import FCU
-    unique_key_suffix = uuid.uuid4().hex[:8]  # Take first 8 characters for brevity
 
     # Instantiate the FCU system with a unique identifier
     identifier = f"FCU-{room.identifier}"
@@ -413,7 +398,7 @@ def get_FCUSystem(st, room):
         'FCU_ACChiller', 'FCU_DCW_Boiler', 'FCU_DCW_ASHP', 'FCU_DCW_DHW', 'FCU_DCW_ElectricBaseboard', 
         'FCU_DCW_GasHeaters', 'FCU_DCW'
     ]
-    equipment_type = st.selectbox("Equipment Type", options=equipment_type_options, index=equipment_type_options.index(fcu_system.equipment_type if fcu_system.equipment_type else equipment_type_options[0]), key=f"equipment_subtype-{room.identifier}-{unique_key_suffix}")
+    equipment_type = st.selectbox("Equipment Type", options=equipment_type_options, index=equipment_type_options.index(fcu_system.equipment_type if fcu_system.equipment_type else equipment_type_options[0]), key=f"equipment_subtype-{room.identifier}-FCUSystem")
     fcu_system.equipment_type = equipment_type
 
     return fcu_system
@@ -441,7 +426,6 @@ def get_GasUnitHeaterSystem(st, room):
 
 def get_RadiantSystem(st, room):
     from honeybee_energy.hvac.heatcool.radiant import Radiant
-    unique_key_suffix = uuid.uuid4().hex[:8]  # Take first 8 characters for brevity
 
     # Instantiate the Radiant system with a unique identifier
     identifier = f"Radiant-{room.identifier}"
@@ -458,7 +442,7 @@ def get_RadiantSystem(st, room):
         'Radiant_ACChiller_Boiler', 'Radiant_ACChiller_ASHP', 'Radiant_ACChiller_DHW', 
         'Radiant_DCW_Boiler', 'Radiant_DCW_ASHP', 'Radiant_DCW_DHW'
     ]
-    equipment_type = st.selectbox("Equipment Type", options=equipment_type_options, index=equipment_type_options.index(radiant_system.equipment_type if radiant_system.equipment_type else equipment_type_options[0]), key=f"equipment_subtype-{room.identifier}-{unique_key_suffix}")
+    equipment_type = st.selectbox("Equipment Type", options=equipment_type_options, index=equipment_type_options.index(radiant_system.equipment_type if radiant_system.equipment_type else equipment_type_options[0]), key=f"equipment_subtype-{room.identifier}-RadiantSystem")
     radiant_system.equipment_type = equipment_type
 
     # Selectbox for radiant_type
@@ -499,7 +483,6 @@ def get_VRFSystem(st, room):
 
 def get_WindowACSystem(st, room):
     from honeybee_energy.hvac.heatcool.windowac import WindowAC
-    unique_key_suffix = uuid.uuid4().hex[:8]  # Take first 8 characters for brevity
 
     # Instantiate the WindowAC system with a unique identifier
     identifier = f"WindowAC-{room.identifier}"
@@ -515,14 +498,13 @@ def get_WindowACSystem(st, room):
         'WindowAC_ElectricBaseboard', 'WindowAC_BoilerBaseboard', 'WindowAC_ASHPBaseboard', 
         'WindowAC_DHWBaseboard', 'WindowAC_Furnace', 'WindowAC_GasHeaters', 'WindowAC'
     ]
-    equipment_type = st.selectbox("Equipment Type", options=equipment_type_options, index=equipment_type_options.index(window_ac_system.equipment_type if window_ac_system.equipment_type else equipment_type_options[-1]), key=f"equipment_subtype-{room.identifier}-{unique_key_suffix}")
+    equipment_type = st.selectbox("Equipment Type", options=equipment_type_options, index=equipment_type_options.index(window_ac_system.equipment_type if window_ac_system.equipment_type else equipment_type_options[-1]), key=f"equipment_subtype-{room.identifier}-WindowACSystem")
     window_ac_system.equipment_type = equipment_type
 
     return window_ac_system
 
 def get_WSHPSystem(st, room):
     from honeybee_energy.hvac.heatcool.wshp import WSHP
-    unique_key_suffix = uuid.uuid4().hex[:8]  # Take first 8 characters for brevity
 
     # Instantiate the WSHP system with a unique identifier
     identifier = f"WSHP-{room.identifier}"
@@ -537,7 +519,7 @@ def get_WSHPSystem(st, room):
     equipment_type_options = [
         'WSHP_FluidCooler_Boiler', 'WSHP_CoolingTower_Boiler', 'WSHP_GSHP', 'WSHP_DCW_DHW'
     ]
-    equipment_type = st.selectbox("Equipment Type", options=equipment_type_options, index=equipment_type_options.index(wshp_system.equipment_type if wshp_system.equipment_type else equipment_type_options[0]), key=f"equipment_subtype-{room.identifier}-{unique_key_suffix}")
+    equipment_type = st.selectbox("Equipment Type", options=equipment_type_options, index=equipment_type_options.index(wshp_system.equipment_type if wshp_system.equipment_type else equipment_type_options[0]), key=f"equipment_subtype-{room.identifier}-WSHPSystem")
     wshp_system.equipment_type = equipment_type
 
     return wshp_system
