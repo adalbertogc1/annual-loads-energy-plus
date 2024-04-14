@@ -33,12 +33,12 @@ Download the weather data (EPW and DDY) from [EPW Map](https://www.ladybug.tools
 
 # How it Works 🛠️
 
-- **Model source**: This section is responsible the initial model creation or input. Models can be validated, visualized. Additonally, model information e.g. area, volumen is available.
-- **Loads**: Assigns any required [loads](https://www.ladybug.tools/honeybee-energy/docs/honeybee_energy.load.html) to each room using [program types](https://www.ladybug.tools/honeybee-energy/docs/honeybee_energy.lib.programtypes.html#) containing all ASHRAE program types for defining room loads and set points.
-- **HVAC systems**: Assigns any kind of HVAC to each room available in [hvac packages](https://www.ladybug.tools/honeybee-energy/docs/honeybee_energy.hvac.html).
-- **Weather**: Imports (via file or URL) weather data and allows the visualisation of insights that may inform energy efficiency measures.
-- **Energy Measures**: A list of available energy measures that can be implemented in the current model. This list will be growing eventually.
-- **Simulation**: Adjust simulation settings when required. The current default settings favour speed over fidelity. The simulation uses EnergyPlus as engine.
+- **Model Creation**: Begin by creating or inputting your building model. Validate and visualize it, and access key information such as area and volume.
+- **Loads Assignment**: Allocate necessary [loads](https://www.ladybug.tools/honeybee-energy/docs/honeybee_energy.load.html) to each room using [program types](https://www.ladybug.tools/honeybee-energy/docs/honeybee_energy.lib.programtypes.html#) containing all ASHRAE program types for defining room loads and set points.
+- **HVAC Systems Integration**: Incorporate [HVAC systems](https://www.ladybug.tools/honeybee-energy/docs/honeybee_energy.hvac.html) into each room from a range of available HVAC packages.
+- **Weather Data Import**: Import weather data via file or URL, enabling visualization of insights crucial for informing energy efficiency measures.
+- **Energy Measures Selection**: Choose from a growing list of available energy measures to implement in the current model.
+- **Simulation Configuration**: Adjust simulation settings as needed. The default settings prioritize speed over fidelity, utilizing EnergyPlus as the simulation engine.
 
 # Getting Started 🚀
 
