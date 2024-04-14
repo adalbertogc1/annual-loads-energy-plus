@@ -2,7 +2,7 @@
 
 Dive into the world of simplified design with the Annual Loads Simulation App! Harness the power of [Ladybug tools](https://www.ladybug.tools/) and [Streamlit](https://streamlit.io/) to quickly craft and simulate your ideal building, all based on a few simple parameters.
 
-<img src="img\gif_demo.gif">
+<img src="img\demo.gif">
 
 # Features 🌟
 
