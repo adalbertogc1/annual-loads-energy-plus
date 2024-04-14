@@ -11,7 +11,7 @@ from pollination_streamlit_viewer import viewer
 from pollination_streamlit_io import get_hbjson
 
 
-from geometry import geometry_parameters, generate_building, generate_honeybee_model, clear_temp_folder
+from geometry import geometry_parameters, generate_building, generate_honeybee_model, clear_temp_folder, create_skylights
 
 
 def initialize():
@@ -62,17 +62,28 @@ def initialize():
     if "building_geometry" not in st.session_state: 
         st.session_state.building_geometry = None  
 
-    # output session
+    # energy efficiency
     if 'heat_cop' not in st.session_state:
         st.session_state.heat_cop = None
     if 'cool_cop' not in st.session_state:
         st.session_state.cool_cop = None
+    if 'skylight_ratio' not in st.session_state:
+        st.session_state.skylight_ratio = 0.
+    if 'skylight_y_dimension' not in st.session_state:
+        st.session_state.skylight_y_dimension = 0.0
+    if 'skylight_operable' not in st.session_state:
+        st.session_state.skylight_operable = False
+
+
+    # imulation settings
     if 'ip_units' not in st.session_state:
         st.session_state.ip_units = False
     if 'upload_ddy' not in st.session_state:
         st.session_state.upload_ddy = False
     if 'normalize' not in st.session_state:
         st.session_state.normalize = True
+    
+    # output session
     if 'sql_results' not in st.session_state:
         st.session_state.sql_results = None
 
@@ -175,7 +186,7 @@ def get_ee_inputs(host: str, container):
     col1, col2 = container.columns([1, 2])
     ee_heating_disabled= True
     ee_heating_value = 0.75
-    if col1.checkbox(label='Heating system (heat pump)', value=False):
+    if col1.checkbox(label='Heating system (heat pump)', value=False, help = "Simulates a heat pump based heating system."):
         ee_heating_disabled= False
         ee_heating_value = 2.5
     in_heat_cop = col2.number_input(label='Heating COP', min_value=0.0, max_value=6.0, value=ee_heating_value, step=0.05, disabled=ee_heating_disabled)
@@ -186,7 +197,7 @@ def get_ee_inputs(host: str, container):
     col1, col2 = container.columns([1, 2])
     ee_cooling_disabled= True
     ee_cooling_value = 2.5
-    if col1.checkbox(label='Cooling system (inverter)', value=False):
+    if col1.checkbox(label='Cooling system (inverter)', value=False, help= "Simulates a highly efficient air conditioning system."):
         ee_cooling_disabled= False
         ee_cooling_value = 4.5
     in_cool_cop = col2.number_input(
@@ -197,11 +208,40 @@ def get_ee_inputs(host: str, container):
 
     # Measure # 3
     col1, col2 = container.columns([1, 2])
+    ee_skylight_disabled= True
+    ee_skylight_ratio = 0.0
+    ee_skylight_y_dimension = 0.0
+    ee_skylight_operable = False
+    if col1.checkbox(label='Skylights', value=False, help = "Beta function. Only works for models created via the geometry wizard."):
+        ee_skylight_disabled= False
+        ee_skylight_ratio = 0.2
+        ee_skylight_y_dimension = 0.5
+        ee_skylight_operable = False
+    
+    col2_1, col2_2, col2_3 = col2.columns(3)
+    in_skylight_ratio  = col2_1.number_input(
+        label='Ratio', min_value=0.0, max_value=1.0, value=ee_skylight_ratio, step=0.05, disabled = ee_skylight_disabled)
+    in_skylight_y_dimension  = col2_2.number_input(
+        label='Dimension', min_value=0.0, max_value=10.0, value=ee_skylight_y_dimension, step=0.05, disabled = ee_skylight_disabled)
+    in_skylight_operable  = col2_3.checkbox(
+        label='Operable windows', value=ee_skylight_operable, disabled = ee_skylight_disabled)
+    if in_skylight_ratio != st.session_state.skylight_ratio or  in_skylight_y_dimension != st.session_state.skylight_y_dimension or in_skylight_operable != st.session_state.skylight_operable:
+        st.session_state.skylight_ratio = in_skylight_ratio
+        st.session_state.skylight_y_dimension = in_skylight_y_dimension
+        st.session_state.skylight_operable= in_skylight_operable
+        for room in st.session_state.hb_model.rooms:
+            create_skylights(room, st.session_state.skylight_ratio ,st.session_state.skylight_y_dimension,  operable_=st.session_state.skylight_operable)
+        clear_temp_folder(full_clean=False)
+        st.session_state.sql_results = None  # reset to have results recomputed
+
+    # Measure # 4
+    col1, col2 = container.columns([1, 2])
     ee_shading_disabled= True
     ee_shading_value = 2.5
     if col1.checkbox(label='Shading system (coming soon)', value=False):
         ee_shading_disabled= False
         ee_shading_value = 4.5
+
 
 
 
@@ -223,7 +263,7 @@ def get_sim_inputs(host: str, container):
     if in_normalize != st.session_state.normalize:
         st.session_state.normalize = in_normalize
 
-    if s_col_1.checkbox(label='Advanced simulation settings', value=False):
+    if s_col_1.checkbox(label='Advanced simulation settings', value=False, help = "Deafult settings are optimized for speed over fidelity. Change only for specific cases."):
         in_terrain_type = s_col_1.selectbox("Terrain type", ['Ocean', 'Country', 'Suburbs', 'Urban', 'City'], index=4,  help="Text for the terrain type in which the model sits.")
         if in_terrain_type != st.session_state.terrain_type:
             st.session_state.terrain_type = in_terrain_type

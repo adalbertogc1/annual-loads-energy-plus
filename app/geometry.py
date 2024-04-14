@@ -1,10 +1,13 @@
 from ladybug_geometry.geometry3d import Point3D, Face3D, Polyface3D, Vector3D
 import streamlit as st
 from honeybee.model import Model,Room
-import json
 import tempfile
 from pathlib import Path
 from honeybee_energy.hvac.idealair import IdealAirSystem
+from honeybee.boundarycondition import Outdoors
+from honeybee.facetype import RoofCeiling
+from honeybee.room import Room
+from honeybee.face import Face
 
 def clear_temp_folder(full_clean = True):
     st.session_state.temp_folder = Path(tempfile.mkdtemp())
@@ -101,6 +104,49 @@ def generate_building(footprint, floor_height, num_floors):
 
     st.session_state.building_geometry = all_floors  # Store the list of Polyface3D geometries for each floor
 
+
+
+def can_host_apeture(face):
+    """Test if a face is intended to host apertures (according to this component)."""
+    return isinstance(face.boundary_condition, Outdoors) and \
+        isinstance(face.type, RoofCeiling)
+
+
+def assign_apertures(face, rat, xd, yd, op):
+    """Assign apertures to a Face based on a set of inputs."""
+    face.apertures_by_ratio_gridded(rat, xd, yd)
+
+    # try to assign the operable property
+    if op:
+        for ap in face.apertures:
+            ap.is_operable = op
+
+# add skylights
+
+def create_skylights(_hb_objs, _ratio,_y_dim_, _x_dim_=None, operable_ = False):
+    # duplicate the initial objects
+    #hb_objs = [obj.duplicate() for obj in _hb_objs]
+
+    # set defaults for any blank inputs
+    if _x_dim_ is None and _x_dim_ is None:
+        _x_dim_ = _x_dim_ if _x_dim_ is None else 3.0 
+    elif _x_dim_ is None:
+        _x_dim_ == _y_dim_
+
+    # loop through the input objects and add apertures
+    for obj in _hb_objs:
+        if isinstance(obj, Room):
+            for face in obj.faces:
+                if can_host_apeture(face):
+                    assign_apertures(face, _ratio, _x_dim_, _y_dim_, operable_)
+        elif isinstance(obj, Face):
+            if can_host_apeture(obj):
+                assign_apertures(obj, _ratio, _x_dim_, _y_dim_, operable_)
+        else:
+            raise TypeError(
+                'Input _hb_objs must be a Room or Face. Not {}.'.format(type(obj)))
+
+
 def generate_honeybee_model():
     """Type of building: Polyface3D"""
     """This function will convert the building into a Honeybee JSON"""
@@ -121,5 +167,8 @@ def generate_honeybee_model():
     # Add ideal air system
     for room in st.session_state.hb_model.rooms:
         identifier = f"IdealAirSystem-{room.identifier}"
-        room.properties.energy.hvac = IdealAirSystem(identifier)
+        if not room.properties.energy.hvac:
+            room.properties.energy.hvac = IdealAirSystem(identifier)
 
+        # Skylights
+        create_skylights(room, st.session_state.skylight_ratio ,st.session_state.skylight_y_dimension,  operable_=st.session_state.skylight_operable)
