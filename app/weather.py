@@ -78,7 +78,7 @@ def create_charts(epw_file,container):
 
     # # write the information to the app
     container.write(f'#### City: {location.city}')
-    container.write(f'#### Latitude: {location.latitude}')
+    container.write(f'#### Latitude: {location.latitude}, Longitude: {location.longitude}')
 
     dbt = epw.dry_bulb_temperature.heat_map()
     diurnal_chart = epw.diurnal_average_chart()
@@ -113,8 +113,8 @@ def get_weather_inputs(host: str, container):
         get_weather_file(w_col_1)
 
     if st.session_state.epw_path:
-        sub_container = container.container()
-        if sub_container.checkbox(label='Weather insights', value=False):
+        #sub_container = container.container()
+        if container.checkbox(label='Weather insights', value=False):
             visualize_weather(container)
 
 
