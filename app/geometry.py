@@ -38,38 +38,6 @@ def geometry_parameters(container):
     st.session_state.floor_height = floor_height_
     st.session_state.wwr = wwr_
 
-def generate_building1(footprint, floor_height, num_floors):
-    all_floors = []
-
-    for i in range(num_floors):
-        faces = []
-        base_height = i * floor_height
-        upper_height = (i + 1) * floor_height
-
-        # Bottom face for the current floor (also serves as ceiling for the floor below)
-        faces.append(Face3D([pt.move(Vector3D(0, 0, base_height)) for pt in footprint]))
-
-        # Side faces for the current floor
-        for j in range(len(footprint)):
-            start_point = footprint[j]
-            end_point = footprint[(j + 1) % len(footprint)]
-
-            lower_left = Point3D(start_point.x, start_point.y, base_height)
-            lower_right = Point3D(end_point.x, end_point.y, base_height)
-            upper_right = Point3D(end_point.x, end_point.y, upper_height)
-            upper_left = Point3D(start_point.x, start_point.y, upper_height)
-
-            face = Face3D([lower_left, lower_right, upper_right, upper_left])
-            faces.append(face)
-
-        # Top face for the current floor
-        if i == num_floors - 1:
-            faces.append(Face3D([pt.move(Vector3D(0, 0, upper_height)) for pt in footprint]))
-
-        floor_geometry = Polyface3D.from_faces(faces, 0.01)
-        all_floors.append(floor_geometry)
-
-    st.session_state.building_geometry = all_floors  # Store the list of Polyface3D geometries for each floor
 
 
 def generate_building(footprint, floor_height, num_floors):
