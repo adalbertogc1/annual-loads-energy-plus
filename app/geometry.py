@@ -6,16 +6,18 @@ import tempfile
 from pathlib import Path
 from honeybee_energy.hvac.idealair import IdealAirSystem
 
-def clear_temp_folder():
+def clear_temp_folder(full_clean = True):
     st.session_state.temp_folder = Path(tempfile.mkdtemp())
-    st.session_state.hb_model = None
     st.session_state.vtk_path = None
-    st.session_state.valid_report = None
-    st.session_state.building_geometry = None
+    if full_clean:
+        st.session_state.hb_model = None
+        st.session_state.valid_report = None
+        st.session_state.building_geometry = None
     
 
 
 def geometry_parameters(container):
+    #col1, col2 = container.columns(2)
     width_ = container.number_input("Building Width [m]",min_value=0,max_value=50,value=10,help="This is the width of the building in meters")
     lenght_ = container.number_input("Building Lenght [m]",min_value=0,max_value=50,value=20,help="This is the lenght of the building in meters")        
     no_of_floors_ = container.number_input("Number of floors",min_value=0,max_value=6,value=1,step=1,help="This is the lenght of the building in meters")

@@ -267,6 +267,6 @@ def run_simulation(target_folder, user_id, hb_model, epw_path, ddy_path, north):
             button_holder.write('')
     
     # simulate the model if the button is pressed
-    button_holder2 = st.empty()
+    button_holder2 = st.container()
     dt = datetime.now().strftime("%Y_%m_%d-%I_%M_%S_%p")
     button_holder2.download_button(label="Download HBJSON",data=json.dumps(st.session_state.hb_model.to_dict()),file_name=f"HBmodel_{dt}.json",mime="application/json")
