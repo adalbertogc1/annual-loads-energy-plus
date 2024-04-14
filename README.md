@@ -11,7 +11,7 @@ Adjust building parameters such as footprint, floor height, and number of floors
 ## Dynamic 3D Visualization
 Our app employs Honeybee and Ladybug for 3D visualization, providing a real-time view of your building model as parameters are modified. This immersive experience helps in understanding spatial relationships and design impacts.
 
-## Comprehensive HVAC Modellin
+## Comprehensive HVAC Modelling
 The app supports a broad spectrum of HVAC system configurations, enabling detailed analysis of their influence on building comfort and energy efficiency. Users can explore and customize various HVAC types, including:
 
 All-Air Systems: Choose from PSZ, VAV, PVAV, and more, suitable for different building sizes and types.
@@ -19,6 +19,10 @@ Radiant Systems: Including radiant floors and ceilings, these options offer comf
 DOAS (Dedicated Outdoor Air Systems): Integrated with other HVAC components, DOAS ensures fresh air supply, improving indoor air quality.
 Hybrid Systems: Combining the benefits of multiple system types to achieve optimal environmental control and energy usage.
 Each HVAC option is customizable, allowing for adjustments in efficiency, control types, and integration with renewable energy sources.
+
+## Ultra frast EnergyPlus simulation
+Quickly run simulation results using the powerful EnergyPlus engine in the back end. Explore annual loads per month and per room.
+
 # How it Works 🛠️
 User Input: Define your building parameters through the sliders.
 Building Generation: The application generates a 3D model based on your inputs.
@@ -26,12 +30,9 @@ Building Generation: The application generates a 3D model based on your inputs.
 # Getting Started 🚀
 - Make sure you have Python `3.7` or a more recent version.
 - Optionally, create a python virtual environment.
-- Install the required libraries. `pip install -r requirements.txt`
-- To launch the Streamlit application use `streamlit run app\app.py`
+- Install the required libraries. `pip install -r app/requirements.txt`
+- To launch the Streamlit application use `streamlit run app/app.py`
 - Start playing!
-
-## Ultra frast EnergyPlus simulation
-Quickly run simulation results using the powerful EnergyPlus engine in the back end. Explore annual loads per month and per room.
 
 
 # Contributing 🤝
