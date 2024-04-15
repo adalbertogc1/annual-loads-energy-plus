@@ -311,7 +311,7 @@ def get_sim_inputs(host: str, container):
 
 
 def geometry_wizard(container):
-    container.markdown("Generate the model based on the following inputs:" )
+    container.markdown("Generate the model geometry based on the following inputs:" )
     g_col_1, g_col_2 = container.columns([2, 1])
     geometry_parameters(g_col_1)
     # load the just designed model if the button is pressed

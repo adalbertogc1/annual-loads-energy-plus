@@ -3,6 +3,7 @@ import streamlit as st
 from pollination_streamlit_io import get_host
 
 from inputs import initialize, get_sim_inputs, get_model_inputs, geometry_wizard,get_ee_inputs
+from constructions import assign_constructions
 from loads import iterate_rooms_and_display_properties
 from hvac import iterate_rooms_hvac
 from weather import get_weather_inputs
@@ -39,25 +40,29 @@ def main(platform):
 
 
     if st.session_state.hb_model:
-        tab1, tab2, tab3, tab4, tab5  = in_container.tabs(["Loads", "HVAC", "Weather", "Energy Efficiency","Simulation"])
+        tab1, tab2, tab3, tab4, tab5, tab6  = in_container.tabs(["Constructions","Loads", "HVAC", "Weather", "Energy Efficiency","Simulation"])
 
         with tab1:
+            st.header("Constructions")
+            assign_constructions(tab1)
+
+        with tab2:
             st.header("Loads")
             iterate_rooms_and_display_properties()
 
-        with tab2:
+        with tab3:
             st.header("HVAC")
             iterate_rooms_hvac(st)
 
-        with tab3:
+        with tab4:
             st.header("Weather")
             get_weather_inputs(platform, st)
         
-        with tab4:
+        with tab5:
             st.header("Energy Efficiency Measures")
             get_ee_inputs(platform, st)
         
-        with tab5:
+        with tab6:
             st.header("Simulation Settings")
             get_sim_inputs(platform, st)
         
