@@ -10,6 +10,8 @@ import streamlit as st
 from pathlib import Path
 from honeybee_energy.lib.programtypes import STANDARDS_REGISTRY
 from honeybee_energy.lib.programtypes import BUILDING_TYPES
+from honeybee.search import filter_array_by_keywords
+
 CLIMATE_ZONES = ('0A', '1A', '2A', '3A', '4A', '5A', '6A', '0B', '1B', '2B', '3B', '4B', '5B', '6B', '3C', '4C', '5C', '7', '8')
 
 def download_file_by_name(url, target_folder, file_name, mkdir=False):
@@ -183,7 +185,7 @@ def get_vintage_loads():
     # The '6' at the end specifies the default selection index from the 'STANDARDS_REGISTRY' list, making the seventh item the default choice.
     standards_registry_list = list(STANDARDS_REGISTRY)
     standards_registry_list = [x for x in standards_registry_list if x not in skip]
-    in_vintage = st.selectbox('Loads year:', standards_registry_list, standards_registry_list.index(st.session_state.vintage_loads)if st.session_state.vintage_loads else 3, key = f"construction_period_{key_}")
+    in_vintage = st.selectbox('Loads year:', standards_registry_list, standards_registry_list.index(st.session_state.vintage_loads)if st.session_state.vintage_loads else standards_registry_list.index(filter_array_by_keywords(standards_registry_list, ["2016"])[0]), key = f"construction_period_{key_}")
     if in_vintage != st.session_state.vintage_loads:
         st.session_state.vintage_loads = in_vintage
         st.session_state.sql_results = None  # reset to have results recomputed
@@ -194,7 +196,7 @@ def get_vintage_constructions():
     # 'STANDARDS_REGISTRY' is a list containing different construction periods. The user's selection is stored in vintage.
     # The '6' at the end specifies the default selection index from the 'STANDARDS_REGISTRY' list, making the seventh item the default choice.
     standards_registry_list = list(STANDARDS_REGISTRY)
-    in_vintage = st.selectbox('Construction Period:', standards_registry_list, standards_registry_list.index(st.session_state.vintage_constructions)if st.session_state.vintage_constructions else 3, key = f"construction_period_{key_}")
+    in_vintage = st.selectbox('Construction Period:', standards_registry_list, standards_registry_list.index(st.session_state.vintage_constructions)if st.session_state.vintage_constructions else standards_registry_list.index(filter_array_by_keywords(standards_registry_list, ["1980_2004"])[0]), key = f"construction_period_{key_}")
     if in_vintage != st.session_state.vintage_constructions:
         st.session_state.vintage_constructions = in_vintage
         st.session_state.sql_results = None  # reset to have results recomputed
