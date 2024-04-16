@@ -1,5 +1,6 @@
 
 import os
+import copy
 from ladybug.futil import unzip_file
 from ladybug.config import folders
 from ladybug.config import folders
@@ -7,6 +8,9 @@ from ladybug.futil import preparedir, unzip_file
 import requests
 import streamlit as st
 from pathlib import Path
+from honeybee_energy.lib.programtypes import STANDARDS_REGISTRY
+from honeybee_energy.lib.programtypes import BUILDING_TYPES
+CLIMATE_ZONES = ('0A', '1A', '2A', '3A', '4A', '5A', '6A', '0B', '1B', '2B', '3B', '4B', '5B', '6B', '3C', '4C', '5C', '7', '8')
 
 def download_file_by_name(url, target_folder, file_name, mkdir=False):
     """Download a file to a directory.
@@ -125,3 +129,95 @@ def get_weather_files_from_url(_weather_URL, _folder_= "test/weather"):
     # set output
     st.session_state.epw_path = Path(epw)
     st.session_state.ddy_path = Path(ddy)
+
+
+def apply_lighting_factor(room, lighting_factor):
+    if room.properties.energy.program_type.lighting:
+        new_program_type = room.properties.energy.program_type.duplicate()
+        if room.identifier not in st.session_state.original_lpds:
+            st.session_state.original_lpds[room.identifier] = float(room.properties.energy.program_type.lighting.watts_per_area)
+        
+        new_program_type.lighting.watts_per_area = lighting_factor*(st.session_state.original_lpds[room.identifier])
+        room.properties.energy.program_type = new_program_type
+
+def update_properties_dict(room, properties_dict, property_name, parent_key=''):
+    updated_dict = copy.deepcopy(properties_dict)  # Use deepcopy to handle nested dicts correctly
+    for key, value in properties_dict.items():
+        unique_key = f"{parent_key}_{key}" if parent_key else key
+        input_key = f"{room.identifier}_{property_name}_{unique_key}"
+
+        if isinstance(value, dict):
+            #updated_dict[key] = update_properties_dict(room, value, property_name, unique_key)
+            st.write(key)
+            st.json(value,expanded=False)
+        elif isinstance(value, str):
+            continue
+        elif isinstance(value, list):
+            for v in value:
+                st.json(v,expanded=False)
+        else:
+            # Handling different data types
+            new_value = st.text_input(f"{unique_key}:", value=str(value), key=input_key)
+            if isinstance(value, float):
+                try:
+                    updated_dict[key] = float(new_value)
+                except ValueError:
+                    st.error(f"Invalid input for {unique_key}. Please enter a valid float.")
+            elif isinstance(value, int):
+                try:
+                    updated_dict[key] = int(new_value)
+                except ValueError:
+                    st.error(f"Invalid input for {unique_key}. Please enter a valid integer.")
+            else:
+                # Assuming other types are strings
+                updated_dict[key] = new_value
+    return updated_dict
+
+
+
+def get_vintage_loads():
+    key_ = "loads" 
+    skip =["pre_1980"]
+    # Use Streamlit's 'selectbox' to create a dropdown menu for selecting a construction period.
+    # 'STANDARDS_REGISTRY' is a list containing different construction periods. The user's selection is stored in vintage.
+    # The '6' at the end specifies the default selection index from the 'STANDARDS_REGISTRY' list, making the seventh item the default choice.
+    standards_registry_list = list(STANDARDS_REGISTRY)
+    standards_registry_list = [x for x in standards_registry_list if x not in skip]
+    in_vintage = st.selectbox('Loads year:', standards_registry_list, standards_registry_list.index(st.session_state.vintage_loads)if st.session_state.vintage_loads else 3, key = f"construction_period_{key_}")
+    if in_vintage != st.session_state.vintage_loads:
+        st.session_state.vintage_loads = in_vintage
+        st.session_state.sql_results = None  # reset to have results recomputed
+
+def get_vintage_constructions():
+    key_="constructions"
+    # Use Streamlit's 'selectbox' to create a dropdown menu for selecting a construction period.
+    # 'STANDARDS_REGISTRY' is a list containing different construction periods. The user's selection is stored in vintage.
+    # The '6' at the end specifies the default selection index from the 'STANDARDS_REGISTRY' list, making the seventh item the default choice.
+    standards_registry_list = list(STANDARDS_REGISTRY)
+    in_vintage = st.selectbox('Construction Period:', standards_registry_list, standards_registry_list.index(st.session_state.vintage_constructions)if st.session_state.vintage_constructions else 3, key = f"construction_period_{key_}")
+    if in_vintage != st.session_state.vintage_constructions:
+        st.session_state.vintage_constructions = in_vintage
+        st.session_state.sql_results = None  # reset to have results recomputed
+
+def get_building_type(key_):
+
+    # Similarly, create another dropdown menu for selecting a building type.
+    # 'BUILDING_TYPES' is a list of different types of buildings. The user's selection is stored in 'st.session_state.building_type'.
+    # Again, '6' is the default selection index, making the seventh item in the 'BUILDING_TYPES' list the default choice.
+    building_types_list = list(BUILDING_TYPES)
+    in_building_type= st.selectbox('Building Type:', building_types_list, building_types_list.index(st.session_state.building_type)if st.session_state.building_type else 6, key = f"building_type_{key_}")
+    if in_building_type != st.session_state.building_type:
+        st.session_state.building_type = in_building_type
+        st.session_state.sql_results = None  # reset to have results recomputed
+
+def get_climate_zone(key_):
+
+    # Similarly, create another dropdown menu for selecting a building type.
+    # 'BUILDING_TYPES' is a list of different types of buildings. The user's selection is stored in 'st.session_state.building_type'.
+    # Again, '6' is the default selection index, making the seventh item in the 'BUILDING_TYPES' list the default choice.
+    climate_zones_list = list(CLIMATE_ZONES)
+    in_climate_zone= st.selectbox('Climate Zone:', climate_zones_list, climate_zones_list.index(st.session_state.climate_zone)if st.session_state.climate_zone else 4, key = f"climate_zone_{key_}")
+    if in_climate_zone != st.session_state.climate_zone:
+        st.session_state.climate_zone = in_climate_zone
+        st.session_state.sql_results = None  # reset to have results recomputed
+

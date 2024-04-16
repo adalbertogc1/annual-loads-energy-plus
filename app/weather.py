@@ -72,21 +72,21 @@ def load_epw(epw_file):
     epw = EPW(epw_file.as_posix())
     return epw
 
-def create_charts(epw_file,container):
-    epw = load_epw(epw_file=epw_file)
+def create_charts(epw,container):
+    
     location = epw.location
-
     # # write the information to the app
     container.write(f'#### City: {location.city}')
     container.write(f'#### Latitude: {location.latitude}, Longitude: {location.longitude}')
+    container.write(f'#### Climate Zone: {epw.ashrae_climate_zone}')
 
     dbt = epw.dry_bulb_temperature.heat_map()
     diurnal_chart = epw.diurnal_average_chart()
 
     return dbt, diurnal_chart
 
-def visualize_weather(container):
-    dbt, diurnal_chart = create_charts(st.session_state.epw_path, container)
+def visualize_weather(epw,container):
+    dbt, diurnal_chart = create_charts(epw,container)
 
     container.plotly_chart(diurnal_chart, use_container_width=True)
     container.plotly_chart(dbt, use_container_width=True)
@@ -113,9 +113,10 @@ def get_weather_inputs(host: str, container):
         get_weather_file(w_col_1)
 
     if st.session_state.epw_path:
-        #sub_container = container.container()
+        epw = load_epw(epw_file=st.session_state.epw_path)
+        st.session_state.climate_zone = epw.ashrae_climate_zone
         if container.checkbox(label='Weather insights', value=False):
-            visualize_weather(container)
+            visualize_weather(epw,container)
 
 
 

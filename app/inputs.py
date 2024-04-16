@@ -9,9 +9,10 @@ from honeybee.model import Model
 from honeybee_vtk.model import Model as VTKModel
 from pollination_streamlit_viewer import viewer
 from pollination_streamlit_io import get_hbjson
-from loads import apply_lighting_factor
+from utils import apply_lighting_factor
 
 from geometry import geometry_parameters, generate_building, generate_honeybee_model, clear_temp_folder, create_skylights
+VALIDTIMESTEPS = (1, 2, 3, 4, 5, 6, 10, 12, 15, 20, 30, 60)
 
 
 def initialize():
@@ -42,9 +43,14 @@ def initialize():
         st.session_state.solar_distribution = None
     if 'calculation_frequency' not in st.session_state:
         st.session_state.calculation_frequency = None
-    # loads session
-    if 'vintage' not in st.session_state:
-        st.session_state.vintage = None
+    
+    # construction and loads session
+    if 'vintage_constructions' not in st.session_state:
+        st.session_state.vintage_constructions = None
+    if 'vintage_loads' not in st.session_state:
+        st.session_state.vintage_loads = None
+    if 'climate_zone' not in st.session_state:
+        st.session_state.climate_zone = None
     if 'building_type' not in st.session_state:
         st.session_state.building_type = None
 
@@ -79,7 +85,7 @@ def initialize():
         st.session_state.original_lpds = {}
 
 
-    # imulation settings
+    # simulation settings
     if 'ip_units' not in st.session_state:
         st.session_state.ip_units = False
     if 'upload_ddy' not in st.session_state:
@@ -288,7 +294,7 @@ def get_sim_inputs(host: str, container):
             st.session_state.terrain_type = in_terrain_type
             st.session_state.sql_results = None  # reset to have results recomputed
 
-        in_timestep = s_col_1.selectbox("Timesteps per hour",[1, 2, 6, 12,60],index=0,  help="An integer for the number of timesteps per hour at which the calculation will be run.")
+        in_timestep = s_col_1.selectbox("Timesteps per hour",VALIDTIMESTEPS,index=0,  help="An integer for the number of timesteps per hour at which the calculation will be run.")
         if in_timestep != st.session_state.timestep:
             st.session_state.timestep = in_timestep
             st.session_state.sql_results = None  # reset to have results recomputed

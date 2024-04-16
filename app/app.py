@@ -40,23 +40,22 @@ def main(platform):
 
 
     if st.session_state.hb_model:
-        tab1, tab2, tab3, tab4, tab5, tab6  = in_container.tabs(["Constructions","Loads", "HVAC", "Weather", "Energy Efficiency","Simulation"])
+        tab1, tab2, tab3, tab4, tab5, tab6  = in_container.tabs(["Weather", "Constructions", "Loads", "HVAC","Energy Efficiency","Simulation"])
 
         with tab1:
-            st.header("Constructions")
-            assign_constructions(tab1)
+            st.header("Weather")
+            get_weather_inputs(platform, st)
 
         with tab2:
+            st.header("Constructions")
+            assign_constructions()
+        with tab3:
             st.header("Loads")
             iterate_rooms_and_display_properties()
 
-        with tab3:
+        with tab4:
             st.header("HVAC")
             iterate_rooms_hvac(st)
-
-        with tab4:
-            st.header("Weather")
-            get_weather_inputs(platform, st)
         
         with tab5:
             st.header("Energy Efficiency Measures")

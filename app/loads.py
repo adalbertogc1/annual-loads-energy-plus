@@ -1,60 +1,20 @@
 
-import copy
 import streamlit as st
 import random
 
-from honeybee_energy.lib.programtypes import STANDARDS_REGISTRY
-from honeybee_energy.lib.programtypes import PROGRAM_TYPES
 from honeybee_energy.lib.programtypes import program_type_by_identifier
-from honeybee_energy.lib.programtypes import BUILDING_TYPES
+from utils import update_properties_dict, get_vintage_loads, get_building_type
+from honeybee_energy.lib.programtypes import PROGRAM_TYPES
 from honeybee.search import filter_array_by_keywords
 
-
-def apply_lighting_factor(room, lighting_factor):
-    if room.properties.energy.program_type.lighting:
-        new_program_type = room.properties.energy.program_type.duplicate()
-        if room.identifier not in st.session_state.original_lpds:
-            st.session_state.original_lpds[room.identifier] = float(room.properties.energy.program_type.lighting.watts_per_area)
-        
-        new_program_type.lighting.watts_per_area = lighting_factor*(st.session_state.original_lpds[room.identifier])
-        room.properties.energy.program_type = new_program_type
-
-def update_properties_dict(room, properties_dict, property_name, parent_key=''):
-    updated_dict = copy.deepcopy(properties_dict)  # Use deepcopy to handle nested dicts correctly
-    for key, value in properties_dict.items():
-        unique_key = f"{parent_key}_{key}" if parent_key else key
-        input_key = f"{room.identifier}_{property_name}_{unique_key}"
-
-        if isinstance(value, dict):
-            #updated_dict[key] = update_properties_dict(room, value, property_name, unique_key)
-            st.write(key)
-            st.json(value,expanded=False)
-        elif isinstance(value, str):
-            continue
-        else:
-            # Handling different data types
-            new_value = st.text_input(f"{unique_key}:", value=str(value), key=input_key)
-            if isinstance(value, float):
-                try:
-                    updated_dict[key] = float(new_value)
-                except ValueError:
-                    st.error(f"Invalid input for {unique_key}. Please enter a valid float.")
-            elif isinstance(value, int):
-                try:
-                    updated_dict[key] = int(new_value)
-                except ValueError:
-                    st.error(f"Invalid input for {unique_key}. Please enter a valid integer.")
-            else:
-                # Assuming other types are strings
-                updated_dict[key] = new_value
-    return updated_dict
-
+'''
 def update_room_program_types(hb_model, vintage, building_type):
     room_prog = filter_array_by_keywords(PROGRAM_TYPES, [vintage, building_type], False)
     for room in hb_model.rooms:
         if 'room_prog' not in room.user_data or room.user_data['room_prog'] not in room_prog:
             room.user_data['room_prog'] = random.choice(room_prog)
             room.properties.energy.program_type = program_type_by_identifier(room.user_data['room_prog'])
+'''
 
 def iterate_rooms_and_display_properties():
     """Iterates through rooms in a Honeybee model, displaying and allowing the modification of various properties such as lighting, 
@@ -70,27 +30,12 @@ def iterate_rooms_and_display_properties():
     Parameters: None
     Returns: None - This function directly modifies the session state and uses Streamlit components to display UI elements. """
     
-
-    # Use Streamlit's 'selectbox' to create a dropdown menu for selecting a construction period.
-    # 'STANDARDS_REGISTRY' is a list containing different construction periods. The user's selection is stored in 'st.session_state.vintage'.
-    # The '6' at the end specifies the default selection index from the 'STANDARDS_REGISTRY' list, making the seventh item the default choice.
-    in_vintage = st.selectbox('Construction Period:', list(STANDARDS_REGISTRY), 6)
-    if in_vintage != st.session_state.vintage:
-        st.session_state.vintage = in_vintage
-        #st.session_state.sql_results = None  # reset to have results recomputed
-
-    # Similarly, create another dropdown menu for selecting a building type.
-    # 'BUILDING_TYPES' is a list of different types of buildings. The user's selection is stored in 'st.session_state.building_type'.
-    # Again, '6' is the default selection index, making the seventh item in the 'BUILDING_TYPES' list the default choice.
-    in_building_type= st.selectbox('Building Type:', list(BUILDING_TYPES), 6)
-    if in_building_type != st.session_state.building_type:
-        st.session_state.building_type = in_building_type
-        #st.session_state.sql_results = None  # reset to have results recomputed
-
-    # Filter room programs based on the selected construction period and building type.
+    get_vintage_loads() 
+    get_building_type("loads")
+        # Filter room programs based on the selected construction period and building type.
     # 'filter_array_by_keywords' is a function that likely takes a list of items ('PROGRAM_TYPES') and a list of keywords (selected vintage and building type)
     # and returns a subset of 'PROGRAM_TYPES' that match the keywords. The 'False' parameter might control the filtering behavior or case sensitivity.
-    room_prog = filter_array_by_keywords(PROGRAM_TYPES, [st.session_state.vintage, st.session_state.building_type], False)
+    room_prog = filter_array_by_keywords(PROGRAM_TYPES, [st.session_state.vintage_loads, st.session_state.building_type], False)
     
     # Iterate over each room in the Honeybee model.
     # 'st.session_state.hb_model.rooms' contains a list of rooms in the model. For each room, various properties will be displayed and can be modified.
@@ -288,7 +233,7 @@ def iterate_rooms_and_display_properties():
                 
                 new_program_type.setpoint = setpoint
 
-            # Assign the updated lighting object back to the new ProgramType
+            # Assign the updated program type back to the original ProgramType
             if room.properties.energy.program_type != new_program_type:
                 room.properties.energy.program_type = new_program_type
                 st.session_state.sql_results = None  # reset to have results recomputed
