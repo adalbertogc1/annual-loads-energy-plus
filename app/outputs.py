@@ -4,7 +4,7 @@ from ladybug.legend import LegendParameters
 from ladybug.monthlychart import MonthlyChart
 import pandas as pd
 
-def display_results(container, sql_results, heat_cop, cool_cop, ip_units, normalize, pci_target = None):
+def display_results(container, sql_results, heat_cop, cool_cop, ip_units, normalize, extra_info = None, extra_info_name=""):
     """Create the charts and metrics from the loaded sql results of the simulation.
 
     Args:
@@ -67,6 +67,7 @@ def display_results(container, sql_results, heat_cop, cool_cop, ip_units, normal
     figure = month_chart.plot(title='Monthly Load')
     container.plotly_chart(figure)
 
+
     # create a monthly chart with the load balance
     bal_colors = Colorset()[19]
     leg_par = LegendParameters(colors=bal_colors)
@@ -74,6 +75,7 @@ def display_results(container, sql_results, heat_cop, cool_cop, ip_units, normal
     month_chart = MonthlyChart(balance, leg_par, stack=True)
     figure = month_chart.plot(title='Monthly Load Balance')
     container.plotly_chart(figure)
+
 
     # process all of the detailed room results into a table
     container.write('Room Summary ({})'.format(display_units))
@@ -110,10 +112,10 @@ def display_results(container, sql_results, heat_cop, cool_cop, ip_units, normal
     container.dataframe(table_data)
 
     container.write('Building Level Summary ({})'.format(display_units))
-    table_data = pd.DataFrame(table_data).drop(["Room","Total"], axis =1)
-    summary_table_data =table_data.sum(axis=0)
-    container.bar_chart(summary_table_data.T)
+    container.info("Coming Soon..")
 
-    if pci_target:
-        container.write('Price Cost Index Information ({})'.format(display_units))
-        container.json(pci_target)
+    if extra_info:
+        container.write( extra_info_name + ' ({})'.format(display_units))
+        container.json(extra_info)
+
+

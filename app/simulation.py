@@ -17,12 +17,14 @@ from honeybee_energy.result.err import Err
 from honeybee_energy.run import prepare_idf_for_simulation, output_energyplus_files
 from honeybee_energy.writer import energyplus_idf_version
 from honeybee_energy.config import folders as energy_folders
-from datetime import datetime
 import streamlit as st
-import json
 from honeybee_energy.baseline.pci import pci_target_from_baseline_sql
+from honeybee_energy.baseline.result import appendix_g_summary
 
 VALIDTIMESTEPS = (1, 2, 3, 4, 5, 6, 10, 12, 15, 20, 30, 60)
+
+
+REPORTINGFREQUENCIES = ("Annual", "Monthly", "Daily")
 
 
 
@@ -205,8 +207,90 @@ def load_sql_data(sql_path, model):
         'balance': balance
     }
 
+def get_simulation_parameters(ddy_path = None):
+    # create simulation parameters for the coarsest/fastest E+ sim possible
+    sim_par = SimulationParameter()
+    sim_par.timestep = sim_par.timestep = st.session_state.timestep if st.session_state.timestep else 1
+    sim_par.shadow_calculation.solar_distribution = st.session_state.solar_distribution if st.session_state.solar_distribution else 'FullExterior' 
+    sim_par.shadow_calculation.calculation_frequency = st.session_state.calculation_frequency if st.session_state.calculation_frequency else int(30)
+    sim_par.terrain_type = str(st.session_state.terrain_type) if st.session_state.terrain_type else str("City")
+    sim_par.output.add_zone_energy_use()
+    sim_par.output.reporting_frequency = st.session_state.reporting_frequency
+    sim_par.output.add_output(gl_el_equip_out)
+    sim_par.output.add_output(gl_gas_equip_out)
+    sim_par.output.add_output(gl1_shw_out)
+    sim_par.output.add_output(gl2_shw_out)
+    sim_par.output.add_gains_and_losses('Total')
+    sim_par.output.add_surface_energy_flow()
+    # assign design days to the simulation parameters, if available
+    if ddy_path:
+        sim_par.sizing_parameter.add_from_ddy(ddy_path.as_posix())
+    return sim_par
 
-def run_simulation(target_folder, user_id, hb_model, epw_path, ddy_path, north):
+def simulation_job(sim_par, hb_model, target_folder,user_id, epw_path, north =None):
+    
+    if north:
+        sim_par.north_angle = float(north)
+    # create the strings for simulation parameters and model
+    ver_str = energyplus_idf_version() if energy_folders.energyplus_version \
+        is not None else ''
+    sim_par_str = sim_par.to_idf()
+    model_str = hb_model.to.idf(hb_model, patch_missing_adjacencies=True)
+    idf_str = '\n\n'.join([ver_str, sim_par_str, model_str])
+
+    # write the final string into an IDF
+    directory = os.path.join(target_folder, 'data', user_id)
+    idf = os.path.join(directory, 'in.idf')
+    write_to_file_by_name(directory, 'in.idf', idf_str, True)
+
+    # run the IDF through EnergyPlus
+    sql, zsz, rdd, html, err = simulate_idf(idf, epw_path.as_posix())
+    if html is None and err is not None:  # something went wrong; parse the errors
+        err_obj = Err(err)
+        print(err_obj.file_contents)
+        for error in err_obj.fatal_errors:
+            raise Exception(error)
+        
+    return sql
+
+
+def run_baseline_simulation(baseline_button_holder,target_folder, user_id, hb_model_baseline, epw_path, ddy_path):
+    """Build the IDF file from a Model and run it through EnergyPlus.
+
+    Args:
+        target_folder: Text for the target folder out of which the simulation will run.
+        user_id: A unique user ID for the session, which will be used to ensure
+            other simulations do not overwrite this one.
+        hb_model: A Honeybee Model object to be simulated.
+        epw_path: Path to an EPW file to be used in the simulation.
+        ddy_path: Path to a DDY file to be used in the simulation.
+        north: Integer for the angle from the Y-axis where North is.
+    """
+    # check to be sure there is a model
+    if not hb_model_baseline or not epw_path or not ddy_path or \
+            st.session_state.baseline_sql_results is not None:
+        return
+
+    # check to be sure that the Model has Rooms
+    assert len(hb_model_baseline.rooms) != 0, \
+        'Model has no Rooms and cannot be simulated in EnergyPlus.'
+
+    # Convert to baseline if required:
+    model_to_baseline(hb_model_baseline,st.session_state.climate_zone, building_type=st.session_state.building_type, lighting_by_building= st.session_state.lighting_by_building)
+
+    # create simulation parameters for the coarsest/fastest E+ sim possible
+    sim_par = get_simulation_parameters(ddy_path)
+
+    st.session_state.sql_baseline  =  simulation_job(sim_par, hb_model_baseline, target_folder,user_id, epw_path)
+    
+    if st.session_state.sql_baseline  is not None and os.path.isfile(st.session_state.sql_baseline ):
+        st.session_state.baseline_sql_results = load_sql_data(st.session_state.sql_baseline , hb_model_baseline)
+        baseline_button_holder.write('')
+        st.session_state.pci_target =pci_target_from_baseline_sql(st.session_state.sql_baseline ,st.session_state.climate_zone,building_type=st.session_state.building_type,electricity_cost=st.session_state.electricity_cost, natural_gas_cost=st.session_state.natural_gas_cost)
+
+
+
+def run_improved_simulation(improved_button_holder, target_folder, user_id, hb_model, epw_path, ddy_path, north):
     """Build the IDF file from a Model and run it through EnergyPlus.
 
     Args:
@@ -220,69 +304,24 @@ def run_simulation(target_folder, user_id, hb_model, epw_path, ddy_path, north):
     """
     # check to be sure there is a model
     if not hb_model or not epw_path or not ddy_path or \
-            st.session_state.sql_results is not None:
+            st.session_state.improved_sql_results is not None:
         return
-
-    # simulate the model if the button is pressed
-    button_holder = st.empty()
-    if button_holder.button('Run Simulation'):
-
-        # Convert to baseline if required:
-        if st.session_state.baseline_bool:
-            model_to_baseline(hb_model,st.session_state.climate_zone, building_type=st.session_state.building_type, lighting_by_building= True)
-
-        # check to be sure that the Model has Rooms
-        assert len(hb_model.rooms) != 0, \
-            'Model has no Rooms and cannot be simulated in EnergyPlus.'
-
-        # create simulation parameters for the coarsest/fastest E+ sim possible
-        sim_par = SimulationParameter()
-        sim_par.timestep = sim_par.timestep = st.session_state.timestep if st.session_state.timestep else 1
-        sim_par.shadow_calculation.solar_distribution = st.session_state.solar_distribution if st.session_state.solar_distribution else 'FullExterior' 
-        sim_par.shadow_calculation.calculation_frequency = st.session_state.calculation_frequency if st.session_state.calculation_frequency else int(30)
-        sim_par.terrain_type = str(st.session_state.terrain_type) if st.session_state.terrain_type else str("City")
-        sim_par.output.add_zone_energy_use()
-        sim_par.output.reporting_frequency = 'Monthly'
-        sim_par.output.add_output(gl_el_equip_out)
-        sim_par.output.add_output(gl_gas_equip_out)
-        sim_par.output.add_output(gl1_shw_out)
-        sim_par.output.add_output(gl2_shw_out)
-        sim_par.output.add_gains_and_losses('Total')
-        sim_par.output.add_surface_energy_flow()
-        sim_par.north_angle = float(north)
-
-        # assign design days to the simulation parameters
-        sim_par.sizing_parameter.add_from_ddy(ddy_path.as_posix())
-
-        # create the strings for simulation parameters and model
-        ver_str = energyplus_idf_version() if energy_folders.energyplus_version \
-            is not None else ''
-        sim_par_str = sim_par.to_idf()
-        model_str = hb_model.to.idf(hb_model, patch_missing_adjacencies=True)
-        idf_str = '\n\n'.join([ver_str, sim_par_str, model_str])
-
-        # write the final string into an IDF
-        directory = os.path.join(target_folder, 'data', user_id)
-        idf = os.path.join(directory, 'in.idf')
-        write_to_file_by_name(directory, 'in.idf', idf_str, True)
-
-        # run the IDF through EnergyPlus
-        sql, zsz, rdd, html, err = simulate_idf(idf, epw_path.as_posix())
-        if html is None and err is not None:  # something went wrong; parse the errors
-            err_obj = Err(err)
-            print(err_obj.file_contents)
-            for error in err_obj.fatal_errors:
-                raise Exception(error)
-        if sql is not None and os.path.isfile(sql):
-            st.session_state.sql_results = load_sql_data(sql, hb_model)
-            button_holder.write('')
-            if st.session_state.baseline_bool:
-                st.session_state.pci_target =pci_target_from_baseline_sql(sql,st.session_state.climate_zone,building_type=st.session_state.building_type,electricity_cost=st.session_state.electricity_cost, natural_gas_cost=st.session_state.natural_gas_cost)
     
-    # simulate the model if the button is pressed
-    button_holder2 = st.container()
-    dt = datetime.now().strftime("%Y_%m_%d-%I_%M_%S_%p")
-    button_holder2.download_button(label="Download HBJSON",data=json.dumps(st.session_state.hb_model.to_dict()),file_name=f"HBmodel_{dt}.json",mime="application/json")
+    # check to be sure that the Model has Rooms
+    assert len(hb_model.rooms) != 0, \
+        'Model has no Rooms and cannot be simulated in EnergyPlus.'
+
+    # create simulation parameters for the coarsest/fastest E+ sim possible
+    sim_par = get_simulation_parameters(ddy_path)
+    sql_improved =  simulation_job(sim_par, hb_model, target_folder,user_id, epw_path, north)
+    
+    if sql_improved is not None and os.path.isfile(sql_improved):
+        st.session_state.improved_sql_results = load_sql_data(sql_improved, hb_model)
+        improved_button_holder.write('')
+        if st.session_state.sql_baseline:
+            st.session_state.appendix_g_summary =appendix_g_summary(sql_improved, st.session_state.sql_baseline,st.session_state.climate_zone,building_type=st.session_state.building_type,electricity_cost=st.session_state.electricity_cost, natural_gas_cost=st.session_state.natural_gas_cost)
+
+
 
 
 
@@ -290,13 +329,9 @@ def run_simulation(target_folder, user_id, hb_model, epw_path, ddy_path, north):
 def get_sim_inputs(host: str, container):
     s_col_1, s_col_2 = container.columns([2, 1])
 
-    in_baseline_bool = s_col_2.checkbox(label='Run ASHRAE 90.1 baseline?', value=st.session_state.baseline_bool, help= "It ignores orientation and turns the model into an ASHRAE compliant model for a given building type and climate zone")
-    if in_baseline_bool != st.session_state.baseline_bool:
-        st.session_state.baseline_bool = in_baseline_bool
-        st.session_state.sql_results = None # reset to have results recomputed
 
     # set up inputs for north
-    in_north = s_col_2.number_input(label='North',step= 10, min_value=0, max_value=360, value=0, disabled=  st.session_state.baseline_bool)
+    in_north = s_col_2.number_input(label='North',step= 10, min_value=0, max_value=360, value=0)
     if in_north != st.session_state.north:
         st.session_state.north = in_north
         st.session_state.sql_results = None  # reset to have results recomputed
@@ -309,6 +344,13 @@ def get_sim_inputs(host: str, container):
     in_normalize = s_col_2.checkbox(label='Floor Normalize', value=True, help=norm_help)
     if in_normalize != st.session_state.normalize:
         st.session_state.normalize = in_normalize
+
+    s_col_1.text("ASHRAE Baseline Settings:")
+    in_lighting_by_building = s_col_1.checkbox(label='Use lighting by building?', value=st.session_state.lighting_by_building, help= "Assigns lighting gains for the entire building base solely on building type. Useful for quick assessments.")
+    if in_lighting_by_building != st.session_state.lighting_by_building:
+        st.session_state.in_lighting_by_building = in_lighting_by_building
+        st.session_state.sql_results = None # reset to have results recomputed
+
     s_col_1_1,s_col_1_2 = s_col_1.columns(2)
     in_electricity_cost = s_col_1_1.number_input("Electricity cost",step= 0.01, min_value=0.0, max_value= 10.0, value=st.session_state.electricity_cost)
     if in_electricity_cost != st.session_state.electricity_cost:
@@ -323,6 +365,12 @@ def get_sim_inputs(host: str, container):
 
 
     if s_col_1.checkbox(label='Advanced simulation settings', value=False, help = "Deafult settings are optimized for speed over fidelity. Change only for specific cases."):
+        #
+        in_reporting_frequency = s_col_1.radio("Reporting Frequency: ", REPORTINGFREQUENCIES, index = REPORTINGFREQUENCIES.index(st.session_state.reporting_frequency), horizontal= True, disabled= False)
+        if in_reporting_frequency != st.session_state.reporting_frequency:
+            st.session_state.reporting_frequency = in_reporting_frequency
+            st.session_state.sql_results = None
+
         in_terrain_type = s_col_1.selectbox("Terrain type", ['Ocean', 'Country', 'Suburbs', 'Urban', 'City'], index=4,  help="Text for the terrain type in which the model sits.")
         if in_terrain_type != st.session_state.terrain_type:
             st.session_state.terrain_type = in_terrain_type

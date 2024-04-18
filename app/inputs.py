@@ -23,6 +23,8 @@ def initialize():
     # sim session
     if 'hb_model' not in st.session_state:
         st.session_state.hb_model = None
+    if "hb_model_baseline" not in st.session_state:
+        st.session_state.hb_model_baseline = None
     if 'vtk_path' not in st.session_state:
         st.session_state.vtk_path = None
     if 'valid_report' not in st.session_state:
@@ -84,8 +86,10 @@ def initialize():
 
 
     # simulation settings
-    if "baseline_bool" not in st.session_state:
-        st.session_state.baseline_bool = True
+    if "reporting_frequency" not in st.session_state:
+        st.session_state.reporting_frequency = "Monthly"
+    if "lighting_by_building" not in st.session_state:
+        st.session_state.lighting_by_building = False
     if 'ip_units' not in st.session_state:
         st.session_state.ip_units = False
     if 'upload_ddy' not in st.session_state:
@@ -98,10 +102,16 @@ def initialize():
         st.session_state.natural_gas_cost = 0.06 # the average 2020 cost of natural gas in the US in $/kWh).
 
     # output session
-    if 'sql_results' not in st.session_state:
-        st.session_state.sql_results = None
+    if 'sql_baseline' not in st.session_state:
+        st.session_state.sql_baseline = None
+    if 'baseline_sql_results' not in st.session_state:
+        st.session_state.baseline_sql_results = None
+    if 'improved_sql_results' not in st.session_state:
+        st.session_state.improved_sql_results = None
     if "pci_target" not in st.session_state:
         st.session_state.pci_target = None
+    if "st.session_state.appendix_g_summary" not in st.session_state:
+        st.session_state.appendix_g_summary = None
 
 
 def new_model():
@@ -201,10 +211,10 @@ def get_ee_inputs(host: str, container):
     # Measure # 1
     col1, col2 = container.columns([1, 2])
     ee_heating_disabled= True
-    ee_heating_value = 0.75
+    ee_heating_value = 1.0
     if col1.checkbox(label='Heating system (heat pump)', value=False, help = "Simulates a heat pump based heating system."):
         ee_heating_disabled= False
-        ee_heating_value = 2.5
+        ee_heating_value = 1.0
     in_heat_cop = col2.number_input(label='Heating COP', min_value=0.0, max_value=6.0, value=ee_heating_value, step=0.05, disabled=ee_heating_disabled)
     if in_heat_cop != st.session_state.heat_cop:
         st.session_state.heat_cop = in_heat_cop
@@ -212,7 +222,7 @@ def get_ee_inputs(host: str, container):
     # Measure # 2
     col1, col2 = container.columns([1, 2])
     ee_cooling_disabled= True
-    ee_cooling_value = 2.5
+    ee_cooling_value = 1.0
     if col1.checkbox(label='Cooling system (inverter)', value=False, help= "Simulates a highly efficient air conditioning system."):
         ee_cooling_disabled= False
         ee_cooling_value = 4.5

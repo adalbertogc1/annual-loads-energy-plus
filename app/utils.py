@@ -223,3 +223,26 @@ def get_climate_zone(key_):
         st.session_state.climate_zone = in_climate_zone
         st.session_state.sql_results = None  # reset to have results recomputed
 
+
+
+
+"""
+        if  st.session_state.hb_model and st.session_state.epw_path and st.session_state.ddy_path and not st.session_state.improved_sql_results:
+            improved_button_holder = improved_col.empty()
+            if improved_button_holder.button('Run Improved Simulation'):
+                run_improved_simulation(
+                    improved_button_holder,
+                    st.session_state.target_folder, st.session_state.user_id,
+                    st.session_state.hb_model,
+                    st.session_state.epw_path, st.session_state.ddy_path, st.session_state.north
+                )
+
+        if st.session_state.appendix_g_summary:
+            display_results(
+                improved_col, st.session_state.improved_sql_results,
+                st.session_state.heat_cop, st.session_state.cool_cop,
+                st.session_state.ip_units, st.session_state.normalize,
+                st.session_state.appendix_g_summary, "Appendix G summary"
+            )
+                
+        """

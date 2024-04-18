@@ -7,10 +7,12 @@ from constructions import assign_constructions
 from loads import iterate_rooms_and_display_properties
 from hvac import iterate_rooms_hvac
 from weather import get_weather_inputs
-from simulation import run_simulation, get_sim_inputs
+from simulation import run_baseline_simulation, get_sim_inputs, run_improved_simulation
 from outputs import display_results
+from datetime import datetime
+import json
 
-
+import copy 
 
 st.set_page_config(
     page_title='Annual Loads Simulation (E+)',
@@ -68,19 +70,34 @@ def main(platform):
         out_container.markdown("""---""")  # horizontal divider line between input and output
             
         # preview the model and/or run the simulation
-        run_simulation(
-            st.session_state.target_folder, st.session_state.user_id,
-            st.session_state.hb_model,
-            st.session_state.epw_path, st.session_state.ddy_path, st.session_state.north
-        )
+        # simulate the model if the button is pressed
+        baseline_col = st.container()
+            # check to be sure there is a model
+        if  st.session_state.hb_model and st.session_state.epw_path and st.session_state.ddy_path and not st.session_state.baseline_sql_results:
+            st.session_state.hb_model_baseline = st.session_state.hb_model.duplicate()
+            baseline_button_holder = baseline_col.empty()
+            if baseline_button_holder.button('Run Baseline Simulation'):
+                run_baseline_simulation(
+                    baseline_button_holder,
+                    st.session_state.target_folder, st.session_state.user_id,
+                    st.session_state.hb_model,
+                    st.session_state.epw_path, st.session_state.ddy_path)
 
-        # create the resulting charts
-        display_results(
-            out_container, st.session_state.sql_results,
-            st.session_state.heat_cop, st.session_state.cool_cop,
-            st.session_state.ip_units, st.session_state.normalize,
-            st.session_state.pci_target
-        )
+        # create the resulting charts for baseline case
+
+        if st.session_state.pci_target:
+            display_results(
+                baseline_col, st.session_state.baseline_sql_results,
+                st.session_state.heat_cop, st.session_state.cool_cop,
+                st.session_state.ip_units, st.session_state.normalize,
+                st.session_state.pci_target, "Price Cost Index Information"
+            )
+
+        
+        # Allow to downoad the model
+        button_holder2 = st.container()
+        dt = datetime.now().strftime("%Y_%m_%d-%I_%M_%S_%p")
+        button_holder2.download_button(label="Download improved HBJSON",data=json.dumps(st.session_state.hb_model.to_dict()),file_name=f"HBmodel_{dt}.json",mime="application/json")
 
 
 if __name__ == '__main__':
@@ -88,3 +105,4 @@ if __name__ == '__main__':
     query = st.query_params
     platform = get_host() or 'web'
     main(platform)
+
