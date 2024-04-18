@@ -12,8 +12,6 @@ from pollination_streamlit_io import get_hbjson
 from utils import apply_lighting_factor
 
 from geometry import geometry_parameters, generate_building, generate_honeybee_model, clear_temp_folder, create_skylights
-VALIDTIMESTEPS = (1, 2, 3, 4, 5, 6, 10, 12, 15, 20, 30, 60)
-
 
 def initialize():
     """Initialize any of the session state variables if they don't already exist."""
@@ -86,17 +84,24 @@ def initialize():
 
 
     # simulation settings
+    if "baseline_bool" not in st.session_state:
+        st.session_state.baseline_bool = True
     if 'ip_units' not in st.session_state:
         st.session_state.ip_units = False
     if 'upload_ddy' not in st.session_state:
         st.session_state.upload_ddy = False
     if 'normalize' not in st.session_state:
         st.session_state.normalize = True
-    
+    if 'electricity_cost' not in st.session_state:
+        st.session_state.electricity_cost = 0.12 # the average 2020 cost of electricity in the US in $/kWh
+    if "natural_gas_cost" not in st.session_state:
+        st.session_state.natural_gas_cost = 0.06 # the average 2020 cost of natural gas in the US in $/kWh).
+
     # output session
     if 'sql_results' not in st.session_state:
         st.session_state.sql_results = None
-
+    if "pci_target" not in st.session_state:
+        st.session_state.pci_target = None
 
 
 def new_model():
@@ -267,52 +272,6 @@ def get_ee_inputs(host: str, container):
         ee_shading_disabled= False
         ee_shading_value = 4.5
 
-
-
-
-def get_sim_inputs(host: str, container):
-    s_col_1, s_col_2 = container.columns([2, 1])
-
-    # set up inputs for north
-    in_north = s_col_2.number_input(label='North',step= 10, min_value=0, max_value=360, value=0)
-    if in_north != st.session_state.north:
-        st.session_state.north = in_north
-        st.session_state.sql_results = None  # reset to have results recomputed
-    
-    ip_help = 'Display output units in kBtu and ft2 instead of kWh and m2.'
-    in_ip_units = s_col_2.checkbox(label='IP Units', value=False, help=ip_help)
-    if in_ip_units != st.session_state.ip_units:
-        st.session_state.ip_units = in_ip_units
-    norm_help = 'Normalize all energy values by the gross floor area.'
-    in_normalize = s_col_2.checkbox(label='Floor Normalize', value=True, help=norm_help)
-    if in_normalize != st.session_state.normalize:
-        st.session_state.normalize = in_normalize
-
-    if s_col_1.checkbox(label='Advanced simulation settings', value=False, help = "Deafult settings are optimized for speed over fidelity. Change only for specific cases."):
-        in_terrain_type = s_col_1.selectbox("Terrain type", ['Ocean', 'Country', 'Suburbs', 'Urban', 'City'], index=4,  help="Text for the terrain type in which the model sits.")
-        if in_terrain_type != st.session_state.terrain_type:
-            st.session_state.terrain_type = in_terrain_type
-            st.session_state.sql_results = None  # reset to have results recomputed
-
-        in_timestep = s_col_1.selectbox("Timesteps per hour",VALIDTIMESTEPS,index=0,  help="An integer for the number of timesteps per hour at which the calculation will be run.")
-        if in_timestep != st.session_state.timestep:
-            st.session_state.timestep = in_timestep
-            st.session_state.sql_results = None  # reset to have results recomputed
-        
-        in_solar_distribution = s_col_1.selectbox("Solar distribution",options=('MinimalShadowing', 'FullExterior', 'FullInteriorAndExterior', 'FullExteriorWithReflections', 'FullInteriorAndExteriorWithReflections'), 
-            index=1,  # Default to 'FullExterior'
-            help="Describes how EnergyPlus treats beam solar radiation and reflections from surfaces."
-        )
-        if in_solar_distribution != st.session_state.solar_distribution:
-            st.session_state.solar_distribution = in_solar_distribution
-            st.session_state.sql_results = None  # reset to have results recomputed
-
-        in_calculation_frequency = s_col_1.selectbox("Calculation frequency",options=('1', '30'), index=1,  # Default to '30'
-            help="Integer for the number of days in each period for which a unique shadow calculation will be performed. ."
-        )
-        if in_calculation_frequency != st.session_state.calculation_frequency:
-            st.session_state.calculation_frequency = in_calculation_frequency
-            st.session_state.sql_results = None  # reset to have results recomputed
 
 
 

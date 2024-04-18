@@ -2,12 +2,12 @@
 import streamlit as st
 from pollination_streamlit_io import get_host
 
-from inputs import initialize, get_sim_inputs, get_model_inputs, geometry_wizard,get_ee_inputs
+from inputs import initialize, get_model_inputs, geometry_wizard,get_ee_inputs
 from constructions import assign_constructions
 from loads import iterate_rooms_and_display_properties
 from hvac import iterate_rooms_hvac
 from weather import get_weather_inputs
-from simulation import run_simulation
+from simulation import run_simulation, get_sim_inputs
 from outputs import display_results
 
 
@@ -78,7 +78,8 @@ def main(platform):
         display_results(
             out_container, st.session_state.sql_results,
             st.session_state.heat_cop, st.session_state.cool_cop,
-            st.session_state.ip_units, st.session_state.normalize
+            st.session_state.ip_units, st.session_state.normalize,
+            st.session_state.pci_target
         )
 
 

@@ -10,6 +10,7 @@ from ladybug.analysisperiod import AnalysisPeriod
 from ladybug.datatype.energyintensity import EnergyIntensity
 from ladybug.color import Color
 from honeybee.units import conversion_factor_to_meters
+from honeybee_energy.baseline.create import model_to_baseline
 from honeybee_energy.result.loadbalance import LoadBalance
 from honeybee_energy.simulation.parameter import SimulationParameter
 from honeybee_energy.result.err import Err
@@ -19,6 +20,11 @@ from honeybee_energy.config import folders as energy_folders
 from datetime import datetime
 import streamlit as st
 import json
+from honeybee_energy.baseline.pci import pci_target_from_baseline_sql
+
+VALIDTIMESTEPS = (1, 2, 3, 4, 5, 6, 10, 12, 15, 20, 30, 60)
+
+
 
 # Names of EnergyPlus outputs that will be requested and parsed to make graphics
 cool_out = 'Zone Ideal Loads Supply Air Total Cooling Energy'
@@ -219,7 +225,12 @@ def run_simulation(target_folder, user_id, hb_model, epw_path, ddy_path, north):
 
     # simulate the model if the button is pressed
     button_holder = st.empty()
-    if button_holder.button('Compute Loads'):
+    if button_holder.button('Run Simulation'):
+
+        # Convert to baseline if required:
+        if st.session_state.baseline_bool:
+            model_to_baseline(hb_model,st.session_state.climate_zone, building_type=st.session_state.building_type, lighting_by_building= True)
+
         # check to be sure that the Model has Rooms
         assert len(hb_model.rooms) != 0, \
             'Model has no Rooms and cannot be simulated in EnergyPlus.'
@@ -265,8 +276,74 @@ def run_simulation(target_folder, user_id, hb_model, epw_path, ddy_path, north):
         if sql is not None and os.path.isfile(sql):
             st.session_state.sql_results = load_sql_data(sql, hb_model)
             button_holder.write('')
+            if st.session_state.baseline_bool:
+                st.session_state.pci_target =pci_target_from_baseline_sql(sql,st.session_state.climate_zone,building_type=st.session_state.building_type,electricity_cost=st.session_state.electricity_cost, natural_gas_cost=st.session_state.natural_gas_cost)
     
     # simulate the model if the button is pressed
     button_holder2 = st.container()
     dt = datetime.now().strftime("%Y_%m_%d-%I_%M_%S_%p")
     button_holder2.download_button(label="Download HBJSON",data=json.dumps(st.session_state.hb_model.to_dict()),file_name=f"HBmodel_{dt}.json",mime="application/json")
+
+
+
+
+def get_sim_inputs(host: str, container):
+    s_col_1, s_col_2 = container.columns([2, 1])
+
+    in_baseline_bool = s_col_2.checkbox(label='Run ASHRAE 90.1 baseline?', value=st.session_state.baseline_bool, help= "It ignores orientation and turns the model into an ASHRAE compliant model for a given building type and climate zone")
+    if in_baseline_bool != st.session_state.baseline_bool:
+        st.session_state.baseline_bool = in_baseline_bool
+        st.session_state.sql_results = None # reset to have results recomputed
+
+    # set up inputs for north
+    in_north = s_col_2.number_input(label='North',step= 10, min_value=0, max_value=360, value=0, disabled=  st.session_state.baseline_bool)
+    if in_north != st.session_state.north:
+        st.session_state.north = in_north
+        st.session_state.sql_results = None  # reset to have results recomputed
+    
+    ip_help = 'Display output units in kBtu and ft2 instead of kWh and m2.'
+    in_ip_units = s_col_2.checkbox(label='IP Units', value=False, help=ip_help)
+    if in_ip_units != st.session_state.ip_units:
+        st.session_state.ip_units = in_ip_units
+    norm_help = 'Normalize all energy values by the gross floor area.'
+    in_normalize = s_col_2.checkbox(label='Floor Normalize', value=True, help=norm_help)
+    if in_normalize != st.session_state.normalize:
+        st.session_state.normalize = in_normalize
+    s_col_1_1,s_col_1_2 = s_col_1.columns(2)
+    in_electricity_cost = s_col_1_1.number_input("Electricity cost",step= 0.01, min_value=0.0, max_value= 10.0, value=st.session_state.electricity_cost)
+    if in_electricity_cost != st.session_state.electricity_cost:
+        st.session_state.electricity_cost =in_electricity_cost
+        st.session_state.pci_target = None
+
+    in_natural_gas_cost = s_col_1_2.number_input("Electricity cost",step= 0.01, min_value=0.0, max_value= 10.0, value=st.session_state.natural_gas_cost)
+    if in_natural_gas_cost != st.session_state.natural_gas_cost:
+        st.session_state.natural_gas_cost =in_natural_gas_cost
+        st.session_state.pci_target = None
+    
+
+
+    if s_col_1.checkbox(label='Advanced simulation settings', value=False, help = "Deafult settings are optimized for speed over fidelity. Change only for specific cases."):
+        in_terrain_type = s_col_1.selectbox("Terrain type", ['Ocean', 'Country', 'Suburbs', 'Urban', 'City'], index=4,  help="Text for the terrain type in which the model sits.")
+        if in_terrain_type != st.session_state.terrain_type:
+            st.session_state.terrain_type = in_terrain_type
+            st.session_state.sql_results = None  # reset to have results recomputed
+
+        in_timestep = s_col_1.selectbox("Timesteps per hour",VALIDTIMESTEPS,index=0,  help="An integer for the number of timesteps per hour at which the calculation will be run.")
+        if in_timestep != st.session_state.timestep:
+            st.session_state.timestep = in_timestep
+            st.session_state.sql_results = None  # reset to have results recomputed
+        
+        in_solar_distribution = s_col_1.selectbox("Solar distribution",options=('MinimalShadowing', 'FullExterior', 'FullInteriorAndExterior', 'FullExteriorWithReflections', 'FullInteriorAndExteriorWithReflections'), 
+            index=1,  # Default to 'FullExterior'
+            help="Describes how EnergyPlus treats beam solar radiation and reflections from surfaces."
+        )
+        if in_solar_distribution != st.session_state.solar_distribution:
+            st.session_state.solar_distribution = in_solar_distribution
+            st.session_state.sql_results = None  # reset to have results recomputed
+
+        in_calculation_frequency = s_col_1.selectbox("Calculation frequency",options=('1', '30'), index=1,  # Default to '30'
+            help="Integer for the number of days in each period for which a unique shadow calculation will be performed. ."
+        )
+        if in_calculation_frequency != st.session_state.calculation_frequency:
+            st.session_state.calculation_frequency = in_calculation_frequency
+            st.session_state.sql_results = None  # reset to have results recomputed

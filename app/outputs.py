@@ -2,9 +2,9 @@
 from ladybug.color import Colorset
 from ladybug.legend import LegendParameters
 from ladybug.monthlychart import MonthlyChart
+import pandas as pd
 
-
-def display_results(container, sql_results, heat_cop, cool_cop, ip_units, normalize):
+def display_results(container, sql_results, heat_cop, cool_cop, ip_units, normalize, pci_target = None):
     """Create the charts and metrics from the loaded sql results of the simulation.
 
     Args:
@@ -108,3 +108,12 @@ def display_results(container, sql_results, heat_cop, cool_cop, ip_units, normal
                 totals[i] += v
     table_data['Total'] = totals
     container.dataframe(table_data)
+
+    container.write('Building Level Summary ({})'.format(display_units))
+    table_data = pd.DataFrame(table_data).drop(["Room","Total"], axis =1)
+    summary_table_data =table_data.sum(axis=0)
+    container.bar_chart(summary_table_data.T)
+
+    if pci_target:
+        container.write('Price Cost Index Information ({})'.format(display_units))
+        container.json(pci_target)
