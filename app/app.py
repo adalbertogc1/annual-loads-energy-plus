@@ -8,7 +8,7 @@ from loads import iterate_rooms_and_display_properties
 from hvac import iterate_rooms_hvac
 from weather import get_weather_inputs
 from simulation import run_baseline_simulation, get_sim_inputs, run_improved_simulation
-from outputs import display_results
+from outputs import display_baseline_results, display_improved_results
 from datetime import datetime
 import json
 
@@ -71,33 +71,47 @@ def main(platform):
             
         # preview the model and/or run the simulation
         # simulate the model if the button is pressed
-        baseline_col = out_container.container()
-            # check to be sure there is a model
-        if  st.session_state.hb_model and st.session_state.epw_path and st.session_state.ddy_path and not st.session_state.baseline_sql_results:
-            st.session_state.hb_model_baseline = st.session_state.hb_model.duplicate()
-            baseline_button_holder = baseline_col.empty()
-            if baseline_button_holder.button('Run Baseline Simulation'):
-                run_baseline_simulation(
-                    baseline_button_holder,
-                    st.session_state.target_folder, st.session_state.user_id,
-                    st.session_state.hb_model,
-                    st.session_state.epw_path, st.session_state.ddy_path)
+        baseline_col, improved_col = out_container.columns(2)
 
-        # create the resulting charts for baseline case
-
-        if st.session_state.pci_target:
-            display_results(
-                baseline_col, st.session_state.baseline_sql_results,
-                st.session_state.heat_cop, st.session_state.cool_cop,
-                st.session_state.ip_units, st.session_state.normalize,
-                st.session_state.pci_target, "Price Cost Index Target"
-            )
-
+        run_baseline_simulation(
+            baseline_col,
+            st.session_state.target_folder, st.session_state.user_id,
+            st.session_state.hb_model,
+            st.session_state.epw_path, st.session_state.ddy_path)
         
-        # Allow to downoad the model
-        button_holder2 = st.container()
-        dt = datetime.now().strftime("%Y_%m_%d-%I_%M_%S_%p")
-        button_holder2.download_button(label="Download improved HBJSON",data=json.dumps(st.session_state.hb_model.to_dict()),file_name=f"HBmodel_{dt}.json",mime="application/json")
+        run_improved_simulation(
+            improved_col,
+            st.session_state.target_folder, st.session_state.user_id,
+            st.session_state.hb_model,
+            st.session_state.epw_path, st.session_state.ddy_path,
+            st.session_state.north)
+
+        # create the resulting charts
+
+        display_baseline_results(
+            baseline_col, st.session_state.baseline_sql_results,
+            st.session_state.heat_cop, st.session_state.cool_cop,
+            st.session_state.ip_units, st.session_state.normalize,
+            st.session_state.pci_target
+        )
+        
+
+        display_improved_results(
+            improved_col, 
+            st.session_state.improved_sql_results,
+            st.session_state.heat_cop, st.session_state.cool_cop,
+            st.session_state.ip_units, st.session_state.normalize,
+            st.session_state.appendix_g_summary
+        )
+
+        # Allow to download the model
+        if st.session_state.hb_model_baseline:
+            dt = datetime.now().strftime("%Y_%m_%d-%I_%M_%S_%p")
+            button_holder1 = baseline_col.container()
+            button_holder1.download_button(label="Download baseline HBJSON",data=json.dumps(st.session_state.hb_model_baseline.to_dict()),file_name=f"HBmodel_{dt}.json",mime="application/json")
+
+            button_holder2 = improved_col.container()
+            button_holder2.download_button(label="Download improved HBJSON",data=json.dumps(st.session_state.hb_model.to_dict()),file_name=f"HBmodel_{dt}.json",mime="application/json")
 
 
 if __name__ == '__main__':

@@ -254,7 +254,7 @@ def simulation_job(sim_par, hb_model, target_folder,user_id, epw_path, north =No
     return sql
 
 
-def run_baseline_simulation(baseline_button_holder,target_folder, user_id, hb_model_baseline, epw_path, ddy_path):
+def run_baseline_simulation(container,target_folder, user_id, hb_model, epw_path, ddy_path):
     """Build the IDF file from a Model and run it through EnergyPlus.
 
     Args:
@@ -267,30 +267,34 @@ def run_baseline_simulation(baseline_button_holder,target_folder, user_id, hb_mo
         north: Integer for the angle from the Y-axis where North is.
     """
     # check to be sure there is a model
-    if not hb_model_baseline or not epw_path or not ddy_path or \
+    if not hb_model or not epw_path or not ddy_path or \
             st.session_state.baseline_sql_results is not None:
         return
 
-    # check to be sure that the Model has Rooms
-    assert len(hb_model_baseline.rooms) != 0, \
-        'Model has no Rooms and cannot be simulated in EnergyPlus.'
+    st.session_state.hb_model_baseline = hb_model.duplicate()
 
-    # Convert to baseline if required:
-    model_to_baseline(hb_model_baseline,st.session_state.climate_zone, building_type=st.session_state.building_type, lighting_by_building= st.session_state.lighting_by_building)
+    baseline_button_holder = container.empty()
+    if baseline_button_holder.button('Run Baseline Simulation'):
+        # check to be sure that the Model has Rooms
+        assert len(st.session_state.hb_model_baseline.rooms) != 0, \
+            'Model has no Rooms and cannot be simulated in EnergyPlus.'
 
-    # create simulation parameters for the coarsest/fastest E+ sim possible
-    sim_par = get_simulation_parameters(ddy_path)
+        # Convert to baseline if required:
+        model_to_baseline(st.session_state.hb_model_baseline,st.session_state.climate_zone, building_type=st.session_state.building_type, lighting_by_building= st.session_state.lighting_by_building)
 
-    st.session_state.sql_baseline  =  simulation_job(sim_par, hb_model_baseline, target_folder,user_id, epw_path)
-    
-    if st.session_state.sql_baseline  is not None and os.path.isfile(st.session_state.sql_baseline ):
-        st.session_state.baseline_sql_results = load_sql_data(st.session_state.sql_baseline , hb_model_baseline)
-        baseline_button_holder.write('')
-        st.session_state.pci_target =pci_target_from_baseline_sql(st.session_state.sql_baseline ,st.session_state.climate_zone,building_type=st.session_state.building_type,electricity_cost=st.session_state.electricity_cost, natural_gas_cost=st.session_state.natural_gas_cost)
+        # create simulation parameters for the coarsest/fastest E+ sim possible
+        sim_par = get_simulation_parameters(ddy_path)
+
+        st.session_state.sql_baseline  =  simulation_job(sim_par, st.session_state.hb_model_baseline, target_folder,user_id, epw_path)
+        
+        if st.session_state.sql_baseline  is not None and os.path.isfile(st.session_state.sql_baseline ):
+            st.session_state.baseline_sql_results = load_sql_data(st.session_state.sql_baseline , st.session_state.hb_model_baseline)
+            baseline_button_holder.write('')
+            st.session_state.pci_target =pci_target_from_baseline_sql(st.session_state.sql_baseline ,st.session_state.climate_zone,building_type=st.session_state.building_type,electricity_cost=st.session_state.electricity_cost, natural_gas_cost=st.session_state.natural_gas_cost)
 
 
 
-def run_improved_simulation(improved_button_holder, target_folder, user_id, hb_model, epw_path, ddy_path, north):
+def run_improved_simulation(container, target_folder, user_id, hb_model, epw_path, ddy_path, north):
     """Build the IDF file from a Model and run it through EnergyPlus.
 
     Args:
@@ -307,22 +311,23 @@ def run_improved_simulation(improved_button_holder, target_folder, user_id, hb_m
             st.session_state.improved_sql_results is not None:
         return
     
-    # check to be sure that the Model has Rooms
-    assert len(hb_model.rooms) != 0, \
-        'Model has no Rooms and cannot be simulated in EnergyPlus.'
 
-    # create simulation parameters for the coarsest/fastest E+ sim possible
-    sim_par = get_simulation_parameters(ddy_path)
-    sql_improved =  simulation_job(sim_par, hb_model, target_folder,user_id, epw_path, north)
-    
-    if sql_improved is not None and os.path.isfile(sql_improved):
-        st.session_state.improved_sql_results = load_sql_data(sql_improved, hb_model)
-        improved_button_holder.write('')
-        if st.session_state.sql_baseline:
-            st.session_state.appendix_g_summary =appendix_g_summary(sql_improved, st.session_state.sql_baseline,st.session_state.climate_zone,building_type=st.session_state.building_type,electricity_cost=st.session_state.electricity_cost, natural_gas_cost=st.session_state.natural_gas_cost)
+    improved_button_holder = container.empty()
+    if improved_button_holder.button('Run Improved Simulation'):
+        
+        # check to be sure that the Model has Rooms
+        assert len(hb_model.rooms) != 0, \
+            'Model has no Rooms and cannot be simulated in EnergyPlus.'
 
-
-
+        # create simulation parameters for the coarsest/fastest E+ sim possible
+        sim_par = get_simulation_parameters(ddy_path)
+        sql_improved =  simulation_job(sim_par, hb_model, target_folder,user_id, epw_path, north)
+        
+        if sql_improved is not None and os.path.isfile(sql_improved):
+            st.session_state.improved_sql_results = load_sql_data(sql_improved, hb_model)
+            improved_button_holder.write('')
+            if st.session_state.sql_baseline:
+                st.session_state.appendix_g_summary =appendix_g_summary(sql_improved, st.session_state.sql_baseline,st.session_state.climate_zone,building_type=st.session_state.building_type,electricity_cost=st.session_state.electricity_cost, natural_gas_cost=st.session_state.natural_gas_cost)
 
 
 
@@ -334,7 +339,7 @@ def get_sim_inputs(host: str, container):
     in_north = s_col_2.number_input(label='North',step= 10, min_value=0, max_value=360, value=0)
     if in_north != st.session_state.north:
         st.session_state.north = in_north
-        st.session_state.sql_results = None  # reset to have results recomputed
+        st.session_state.improved_sql_results = None  # reset to have results recomputed
     
     ip_help = 'Display output units in kBtu and ft2 instead of kWh and m2.'
     in_ip_units = s_col_2.checkbox(label='IP Units', value=False, help=ip_help)
@@ -353,18 +358,20 @@ def get_sim_inputs(host: str, container):
     in_lighting_by_building = s_col_1.checkbox(label='Use lighting by building?', value=st.session_state.lighting_by_building, help= "Assigns lighting gains for the entire building base solely on building type. Useful for quick assessments.")
     if in_lighting_by_building != st.session_state.lighting_by_building:
         st.session_state.in_lighting_by_building = in_lighting_by_building
-        st.session_state.sql_results = None # reset to have results recomputed
-
+        st.session_state.baseline_sql_results = None
+        st.session_state.improved_sql_results = None
     s_col_1_1,s_col_1_2 = s_col_1.columns(2)
     in_electricity_cost = s_col_1_1.number_input("Electricity cost",step= 0.01, min_value=0.0, max_value= 10.0, value=st.session_state.electricity_cost)
     if in_electricity_cost != st.session_state.electricity_cost:
         st.session_state.electricity_cost =in_electricity_cost
         st.session_state.pci_target = None
+        st.session_state.appendix_g_summary = None
 
     in_natural_gas_cost = s_col_1_2.number_input("Electricity cost",step= 0.01, min_value=0.0, max_value= 10.0, value=st.session_state.natural_gas_cost)
     if in_natural_gas_cost != st.session_state.natural_gas_cost:
         st.session_state.natural_gas_cost =in_natural_gas_cost
         st.session_state.pci_target = None
+        st.session_state.appendix_g_summary = None
     
 
 

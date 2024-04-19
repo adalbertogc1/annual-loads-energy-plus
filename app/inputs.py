@@ -87,7 +87,7 @@ def initialize():
 
     # simulation settings
     if "reporting_frequency" not in st.session_state:
-        st.session_state.reporting_frequency = "Monthly"
+        st.session_state.reporting_frequency = "Annual"
     if "lighting_by_building" not in st.session_state:
         st.session_state.lighting_by_building = False
     if 'ip_units' not in st.session_state:
@@ -110,7 +110,7 @@ def initialize():
         st.session_state.improved_sql_results = None
     if "pci_target" not in st.session_state:
         st.session_state.pci_target = None
-    if "st.session_state.appendix_g_summary" not in st.session_state:
+    if "appendix_g_summary" not in st.session_state:
         st.session_state.appendix_g_summary = None
 
 
