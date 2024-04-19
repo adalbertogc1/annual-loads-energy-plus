@@ -63,7 +63,8 @@ def iterate_rooms_and_display_properties():
             if new_room_prog != room.properties.energy.program_type.identifier:
                 new_program_type = program_type_by_identifier(new_room_prog)
                 room.properties.energy.program_type = new_program_type
-                st.session_state.sql_results = None  # reset to have results recomputed
+                st.session_state.baseline_sql_results = None
+                st.session_state.improved_sql_results = None  # reset to have results recomputed
             else:
                 # Duplicate the program type to ensure any modifications are made on a new instance, preserving the original object's state.
                 new_program_type = room.properties.energy.program_type
@@ -88,19 +89,14 @@ def iterate_rooms_and_display_properties():
                 # If it is, update the 'watts_per_area' property of the lighting object with the new value.
                 if 'watts_per_area' in updated_lighting_dict:
                     lighting.watts_per_area = updated_lighting_dict['watts_per_area']
-                    #st.session_state.sql_results = None  # reset to have results recomputed
                 if 'return_air_fraction' in updated_lighting_dict:
                     lighting.return_air_fraction = updated_lighting_dict['return_air_fraction']
-                    #st.session_state.sql_results = None  # reset to have results recomputed
                 if 'radiant_fraction' in updated_lighting_dict:
                     lighting.radiant_fraction = updated_lighting_dict['radiant_fraction']
-                    #st.session_state.sql_results = None  # reset to have results recomputed
                 if 'visible_fraction' in updated_lighting_dict:
                     lighting.visible_fraction = updated_lighting_dict['visible_fraction']
-                    #st.session_state.sql_results = None  # reset to have results recomputed
                 if 'baseline_watts_per_area' in updated_lighting_dict:
                     lighting.baseline_watts_per_area = updated_lighting_dict['baseline_watts_per_area']
-                    #st.session_state.sql_results = None  # reset to have results recomputed
                 
                 # After updating the lighting object with new properties, assign it back to the new program type.
                 # This ensures that the program type uses the updated lighting configuration.
@@ -115,10 +111,8 @@ def iterate_rooms_and_display_properties():
 
                 if 'people_per_area' in updated_people_dict:
                     people.people_per_area = updated_people_dict['people_per_area']
-                    #st.session_state.sql_results = None  # reset to have results recomputed
                 if 'radiant_fraction' in updated_people_dict:
                     people.radiant_fraction = updated_people_dict['radiant_fraction']
-                    #st.session_state.sql_results = None  # reset to have results recomputed
                 
                 new_program_type.people = people
 
@@ -131,16 +125,12 @@ def iterate_rooms_and_display_properties():
 
                     if 'watts_per_area' in updated_electric_equipment_dict:
                         electric_equipment.watts_per_area = updated_electric_equipment_dict['watts_per_area']
-                        #st.session_state.sql_results = None  # reset to have results recomputed
                     if 'radiant_fraction' in updated_electric_equipment_dict:
                         electric_equipment.radiant_fraction = updated_electric_equipment_dict['radiant_fraction']
-                        #st.session_state.sql_results = None  # reset to have results recomputed
                     if 'latent_fraction' in updated_electric_equipment_dict:
                         electric_equipment.latent_fraction = updated_electric_equipment_dict['latent_fraction']
-                        #st.session_state.sql_results = None  # reset to have results recomputed
                     if 'lost_fraction' in updated_electric_equipment_dict:
                         electric_equipment.lost_fraction = updated_electric_equipment_dict['lost_fraction']
-                        #st.session_state.sql_results = None  # reset to have results recomputed
                    
                     new_program_type.electric_equipment = electric_equipment
            
@@ -153,16 +143,12 @@ def iterate_rooms_and_display_properties():
 
                 if 'watts_per_area' in updated_gas_equipment_dict:
                     gas_equipment.watts_per_area = updated_gas_equipment_dict['watts_per_area']
-                    #st.session_state.sql_results = None  # reset to have results recomputed
                 if 'radiant_fraction' in updated_gas_equipment_dict:
                     gas_equipment.radiant_fraction = updated_gas_equipment_dict['radiant_fraction']
-                    #st.session_state.sql_results = None  # reset to have results recomputed
                 if 'latent_fraction' in updated_gas_equipment_dict:
                     gas_equipment.latent_fraction = updated_gas_equipment_dict['latent_fraction']
-                    #st.session_state.sql_results = None  # reset to have results recomputed
                 if 'lost_fraction' in updated_gas_equipment_dict:
                     gas_equipment.lost_fraction = updated_gas_equipment_dict['lost_fraction']
-                    #st.session_state.sql_results = None  # reset to have results recomputed
 
                 
                 new_program_type.gas_equipment = gas_equipment
@@ -176,19 +162,14 @@ def iterate_rooms_and_display_properties():
 
                 if 'service_hot_water_per_area' in updated_service_hot_water_dict:
                     service_hot_water.service_hot_water_per_area = updated_service_hot_water_dict['service_hot_water_per_area']
-                    #st.session_state.sql_results = None  # reset to have results recomputed
                 if 'flow_per_area' in updated_service_hot_water_dict:
                     service_hot_water.flow_per_area = updated_service_hot_water_dict['flow_per_area']
-                    #st.session_state.sql_results = None  # reset to have results recomputed
                 if 'target_temperature' in updated_service_hot_water_dict:
                     service_hot_water.target_temperature = updated_service_hot_water_dict['target_temperature']
-                    #st.session_state.sql_results = None  # reset to have results recomputed
                 if 'sensible_fraction' in updated_service_hot_water_dict:
                     service_hot_water.sensible_fraction = updated_service_hot_water_dict['sensible_fraction']
-                    #st.session_state.sql_results = None  # reset to have results recomputed
                 if 'latent_fraction' in updated_service_hot_water_dict:
                     service_hot_water.latent_fraction = updated_service_hot_water_dict['latent_fraction']
-                    #st.session_state.sql_results = None  # reset to have results recomputed
                 
                 new_program_type.service_hot_water = service_hot_water
 
@@ -201,7 +182,6 @@ def iterate_rooms_and_display_properties():
 
                 if 'flow_per_exterior_area' in updated_infiltration_dict:
                     infiltration.flow_per_exterior_area = updated_infiltration_dict['flow_per_exterior_area']
-                    #st.session_state.sql_results = None  # reset to have results recomputed
                 new_program_type.infiltration = infiltration    
             
             if new_program_type.ventilation:
@@ -213,10 +193,8 @@ def iterate_rooms_and_display_properties():
 
                 if 'flow_per_person' in updated_ventilation_dict:
                     ventilation.flow_per_person = updated_ventilation_dict['flow_per_person']
-                    #st.session_state.sql_results = None  # reset to have results recomputed
                 if 'flow_per_area' in updated_ventilation_dict:
                     ventilation.flow_per_area = updated_ventilation_dict['flow_per_area']
-                    #st.session_state.sql_results = None  # reset to have results recomputed
                 
                 new_program_type.ventilation = ventilation
             
@@ -229,12 +207,12 @@ def iterate_rooms_and_display_properties():
 
                 if 'setpoint_per_area' in updated_setpoint_dict:
                     setpoint.setpoint_per_area = updated_setpoint_dict['setpoint_per_area']
-                    #st.session_state.sql_results = None  # reset to have results recomputed
                 
                 new_program_type.setpoint = setpoint
 
             # Assign the updated program type back to the original ProgramType
             if room.properties.energy.program_type != new_program_type:
                 room.properties.energy.program_type = new_program_type
-                st.session_state.sql_results = None  # reset to have results recomputed
+                st.session_state.baseline_sql_results = None
+                st.session_state.improved_sql_results = None
 

@@ -188,7 +188,8 @@ def get_vintage_loads():
     in_vintage = st.selectbox('Loads year:', standards_registry_list, standards_registry_list.index(st.session_state.vintage_loads)if st.session_state.vintage_loads else standards_registry_list.index(filter_array_by_keywords(standards_registry_list, ["2016"])[0]), key = f"construction_period_{key_}")
     if in_vintage != st.session_state.vintage_loads:
         st.session_state.vintage_loads = in_vintage
-        st.session_state.sql_results = None  # reset to have results recomputed
+        st.session_state.baseline_sql_results = None
+        st.session_state.improved_sql_results = None
 
 def get_vintage_constructions():
     key_="constructions"
@@ -199,7 +200,8 @@ def get_vintage_constructions():
     in_vintage = st.selectbox('Construction Period:', standards_registry_list, standards_registry_list.index(st.session_state.vintage_constructions)if st.session_state.vintage_constructions else standards_registry_list.index(filter_array_by_keywords(standards_registry_list, ["1980_2004"])[0]), key = f"construction_period_{key_}")
     if in_vintage != st.session_state.vintage_constructions:
         st.session_state.vintage_constructions = in_vintage
-        st.session_state.sql_results = None  # reset to have results recomputed
+        st.session_state.baseline_sql_results = None
+        st.session_state.improved_sql_results = None
 
 def get_building_type(key_):
 
@@ -210,7 +212,8 @@ def get_building_type(key_):
     in_building_type= st.selectbox('Building Type:', building_types_list, building_types_list.index(st.session_state.building_type)if st.session_state.building_type else 6, key = f"building_type_{key_}")
     if in_building_type != st.session_state.building_type:
         st.session_state.building_type = in_building_type
-        st.session_state.sql_results = None  # reset to have results recomputed
+        st.session_state.baseline_sql_results = None
+        st.session_state.improved_sql_results = None
 
 def get_climate_zone(key_):
 
@@ -221,7 +224,8 @@ def get_climate_zone(key_):
     in_climate_zone= st.selectbox('Climate Zone:', climate_zones_list, climate_zones_list.index(st.session_state.climate_zone)if st.session_state.climate_zone else 4, key = f"climate_zone_{key_}")
     if in_climate_zone != st.session_state.climate_zone:
         st.session_state.climate_zone = in_climate_zone
-        st.session_state.sql_results = None  # reset to have results recomputed
+        st.session_state.baseline_sql_results = None
+        st.session_state.improved_sql_results = None
 
 
 

@@ -7,7 +7,8 @@ from utils import get_weather_files_from_url
 def new_weather_file():
     """Process a newly-uploaded EPW file."""
     # reset the simulation results and get the file data
-    st.session_state.sql_results = None
+    st.session_state.baseline_sql_results = None
+    st.session_state.improved_sql_results = None
     st.session_state.epw_path = None
     epw_file = st.session_state.epw_data
     if epw_file:
@@ -35,7 +36,8 @@ def new_weather_file():
 def new_design_file():
     """Process a newly-uploaded DDY file."""
     # reset the simulation results and get the file data
-    st.session_state.sql_results = None
+    st.session_state.baseline_sql_results = None
+    st.session_state.improved_sql_results = None
     ddy_file = st.session_state.ddy_data
     if ddy_file:
         # save DDY in data folder
@@ -108,7 +110,8 @@ def get_weather_inputs(host: str, container):
         if button_holder.button('Download weather file'):
             st.session_state.epw_path = None
             get_weather_files_from_url(weather_url_)
-            st.session_state.sql_results = None  # reset to have results recomputed
+            st.session_state.baseline_sql_results = None
+            st.session_state.improved_sql_results = None
     else:
         get_weather_file(w_col_1)
 

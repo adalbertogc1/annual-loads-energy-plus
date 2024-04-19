@@ -71,7 +71,7 @@ def main(platform):
             
         # preview the model and/or run the simulation
         # simulate the model if the button is pressed
-        baseline_col = st.container()
+        baseline_col = out_container.container()
             # check to be sure there is a model
         if  st.session_state.hb_model and st.session_state.epw_path and st.session_state.ddy_path and not st.session_state.baseline_sql_results:
             st.session_state.hb_model_baseline = st.session_state.hb_model.duplicate()
@@ -90,7 +90,7 @@ def main(platform):
                 baseline_col, st.session_state.baseline_sql_results,
                 st.session_state.heat_cop, st.session_state.cool_cop,
                 st.session_state.ip_units, st.session_state.normalize,
-                st.session_state.pci_target, "Price Cost Index Information"
+                st.session_state.pci_target, "Price Cost Index Target"
             )
 
         

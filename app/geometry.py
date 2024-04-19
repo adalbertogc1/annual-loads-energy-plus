@@ -24,7 +24,7 @@ def geometry_parameters(container):
     width_ = container.number_input("Building Width [m]",min_value=0.0,max_value=50.0,value=10.0,help="This is the width of the building in meters")
     lenght_ = container.number_input("Building Lenght [m]",min_value=0.0,max_value=50.0,value=20.0,help="This is the lenght of the building in meters")        
     no_of_floors_ = container.number_input("Number of floors",min_value=0, max_value=10,value=2,step=1,help="This is the lenght of the building in meters")
-    floor_height_ = container.number_input("Building Floor height [m]",min_value=2.0,max_value=10.0,value=2.5,help="This is the height of the building floor in meters")       
+    floor_height_ = container.number_input("Building Floor height [m]",min_value=2.0,max_value=10.0,value=3.0,help="This is the height of the building floor in meters")       
     wwr_ =  container.number_input("Window to wall ratio",min_value=0.0,max_value=0.99,value=0.4,help="This is the window to wall ratio for all the rooms")
    
 

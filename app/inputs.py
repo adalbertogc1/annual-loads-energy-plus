@@ -119,7 +119,8 @@ def new_model():
     # reset the simulation results and get the file data
     st.session_state.vtk_path = None
     st.session_state.valid_report = None
-    st.session_state.sql_results = None
+    st.session_state.baseline_sql_results = None
+    st.session_state.improved_sql_results = None
     # load the model object from the file data
     if 'hbjson' in st.session_state['hbjson_data']:
         hbjson_data = st.session_state['hbjson_data']['hbjson']
@@ -258,7 +259,7 @@ def get_ee_inputs(host: str, container):
         for room in st.session_state.hb_model.rooms:
             create_skylights(room, st.session_state.skylight_ratio ,st.session_state.skylight_y_dimension,  operable_=st.session_state.skylight_operable)
         clear_temp_folder(full_clean=False)
-        st.session_state.sql_results = None  # reset to have results recomputed
+        st.session_state.improved_sql_results = None  # reset to have results recomputed
 
     # Measure # 4
     col1, col2 = container.columns([1, 2])
@@ -272,7 +273,7 @@ def get_ee_inputs(host: str, container):
         st.session_state.lighting_factor = in_lighting_factor
         for room in st.session_state.hb_model.rooms:
             apply_lighting_factor(room, st.session_state.lighting_factor)
-        st.session_state.sql_results = None  # reset to have results recomputed
+        st.session_state.improved_sql_results = None  # reset to have results recomputed
 
     # Measure # 5
     col1, col2 = container.columns([1, 2])
@@ -295,7 +296,8 @@ def geometry_wizard(container):
         clear_temp_folder()
         generate_building(st.session_state.footprint, st.session_state.floor_height, st.session_state.no_of_floors)
         generate_honeybee_model()
-        st.session_state.sql_results = None  # reset to have results recomputed
+        st.session_state.baseline_sql_results = None
+        st.session_state.improved_sql_results = None
     # add options to preview the model in 3D and validate it
     if st.session_state.hb_model:
         if g_col_2.checkbox(label='Preview Model', value=False):
