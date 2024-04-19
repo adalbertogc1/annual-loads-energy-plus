@@ -106,8 +106,8 @@ def main(platform):
                 st.session_state.ip_units, st.session_state.normalize
             )
             if st.session_state.hb_model_baseline:
-                    dt = datetime.now().strftime("%Y_%m_%d-%I_%M_%S_%p")
-                    st.download_button(label="Download improved HBJSON",data=json.dumps(st.session_state.hb_model.to_dict()),file_name=f"HBmodel_{dt}.json",mime="application/json")
+                dt = datetime.now().strftime("%Y_%m_%d-%I_%M_%S_%p")
+                st.download_button(label="Download improved HBJSON",data=json.dumps(st.session_state.hb_model.to_dict()),file_name=f"HBmodel_{dt}.json",mime="application/json")
 
             
             
