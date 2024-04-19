@@ -213,6 +213,6 @@ def iterate_rooms_and_display_properties():
             # Assign the updated program type back to the original ProgramType
             if room.properties.energy.program_type != new_program_type:
                 room.properties.energy.program_type = new_program_type
-                #st.session_state.baseline_sql_results = None
-                #st.session_state.improved_sql_results = None
+                st.session_state.baseline_sql_results = None
+                st.session_state.improved_sql_results = None
 

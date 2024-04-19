@@ -288,7 +288,7 @@ def run_baseline_simulation(container,target_folder, user_id, hb_model, epw_path
         
         if st.session_state.sql_baseline  is not None and os.path.isfile(st.session_state.sql_baseline ):
             st.session_state.baseline_sql_results = load_sql_data(st.session_state.sql_baseline , st.session_state.hb_model_baseline)
-            baseline_button_holder.write('')
+            #baseline_button_holder.write('')
 
 
 def run_improved_simulation(container, target_folder, user_id, hb_model, epw_path, ddy_path, north):
@@ -323,7 +323,7 @@ def run_improved_simulation(container, target_folder, user_id, hb_model, epw_pat
         
         if st.session_state.sql_improved is not None and os.path.isfile(st.session_state.sql_improved):
             st.session_state.improved_sql_results = load_sql_data(st.session_state.sql_improved, hb_model)
-            improved_button_holder.write('')
+            #improved_button_holder.write('')
 
 
 
