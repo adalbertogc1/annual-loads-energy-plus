@@ -87,7 +87,7 @@ def initialize():
 
     # simulation settings
     if "reporting_frequency" not in st.session_state:
-        st.session_state.reporting_frequency = "Annual"
+        st.session_state.reporting_frequency = None
     if "lighting_by_building" not in st.session_state:
         st.session_state.lighting_by_building = False
     if 'ip_units' not in st.session_state:

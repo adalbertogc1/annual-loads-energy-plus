@@ -311,6 +311,7 @@ def run_improved_simulation(container, target_folder, user_id, hb_model, epw_pat
 
     improved_button_holder = container.empty()
     if improved_button_holder.button('Run Improved Simulation'):
+        #  if st.session_state.sql_baseline:
         
         # check to be sure that the Model has Rooms
         assert len(hb_model.rooms) != 0, \
@@ -345,7 +346,7 @@ def get_sim_inputs(host: str, container):
     if in_normalize != st.session_state.normalize:
         st.session_state.normalize = in_normalize
 
-    in_reporting_frequency = s_col_2.radio("Reporting Frequency: ", REPORTINGFREQUENCIES, index = REPORTINGFREQUENCIES.index(st.session_state.reporting_frequency), horizontal= True, disabled= False)
+    in_reporting_frequency = s_col_2.radio("Reporting Frequency: ", REPORTINGFREQUENCIES, index = REPORTINGFREQUENCIES.index(st.session_state.reporting_frequency) if st.session_state.reporting_frequency else 0, horizontal= True, disabled= False)
     if in_reporting_frequency != st.session_state.reporting_frequency:
         st.session_state.reporting_frequency = in_reporting_frequency
 
