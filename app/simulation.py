@@ -354,7 +354,7 @@ def get_sim_inputs(host: str, container):
     in_lighting_by_building = s_col_1.checkbox(label='Use lighting by building?', value=False, help= "Assigns lighting gains for the entire building base solely on building type. Useful for quick assessments.")
     if in_lighting_by_building != st.session_state.lighting_by_building:
         st.session_state.in_lighting_by_building = in_lighting_by_building
-        #st.session_state.baseline_sql_results = None
+        st.session_state.hb_model_baseline = None
         #st.session_state.improved_sql_results = None
     s_col_1_1,s_col_1_2 = s_col_1.columns(2)
     in_electricity_cost = s_col_1_1.number_input("Electricity cost",step= 0.01, min_value=0.0, max_value= 10.0, value=st.session_state.electricity_cost)
@@ -398,3 +398,4 @@ def get_sim_inputs(host: str, container):
         if in_calculation_frequency != st.session_state.calculation_frequency:
             st.session_state.calculation_frequency = in_calculation_frequency
 
+    
