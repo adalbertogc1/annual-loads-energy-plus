@@ -5,6 +5,8 @@ from ladybug.monthlychart import MonthlyChart
 import pandas as pd
 import streamlit as st
 import altair as alt
+from honeybee_energy.baseline.pci import pci_target_from_baseline_sql
+from honeybee_energy.baseline.result import appendix_g_summary
 
 def get_sql_results(sql_results):
     load_terms = sql_results['load_terms'].copy()
@@ -14,7 +16,7 @@ def get_sql_results(sql_results):
     floor_area = sql_results['floor_area']
     return load_terms, load_colors, balance, room_results, floor_area
 
-def display_baseline_results(container, sql_results, heat_cop, cool_cop, ip_units, normalize, pci_target):
+def display_baseline_results(container, sql_results, heat_cop, cool_cop, ip_units, normalize):
     """Create the charts and metrics from the loaded sql results of the simulation.
 
     Args:
@@ -156,12 +158,13 @@ def display_baseline_results(container, sql_results, heat_cop, cool_cop, ip_unit
         container.altair_chart(chart, use_container_width=True)
 
     container.write( 'Price Cost Index Target ({})'.format(display_units))
-    container.json(pci_target)
+    st.session_state.pci_target =pci_target_from_baseline_sql(st.session_state.sql_baseline ,st.session_state.climate_zone,building_type=st.session_state.building_type,electricity_cost=st.session_state.electricity_cost, natural_gas_cost=st.session_state.natural_gas_cost)
+    container.json(st.session_state.pci_target)
 
 
 
 
-def display_improved_results(container, sql_results, heat_cop, cool_cop, ip_units, normalize,appendix_g_summary):
+def display_improved_results(container, sql_results, heat_cop, cool_cop, ip_units, normalize):
     """Create the charts and metrics from the loaded sql results of the simulation.
 
     Args:
@@ -307,8 +310,9 @@ def display_improved_results(container, sql_results, heat_cop, cool_cop, ip_unit
         # Display the chart using Streamlit
         container.altair_chart(chart, use_container_width=True)
 
-
-    container.write('Appendix G summary ({})'.format(display_units))
-    container.json(appendix_g_summary)
+    if st.session_state.sql_baseline:
+        container.write('Appendix G summary ({})'.format(display_units))
+        st.session_state.appendix_g_summary =appendix_g_summary(st.session_state.sql_improved, st.session_state.sql_baseline,st.session_state.climate_zone,building_type=st.session_state.building_type,electricity_cost=st.session_state.electricity_cost, natural_gas_cost=st.session_state.natural_gas_cost)
+        container.json(st.session_state.appendix_g_summary)
 
 

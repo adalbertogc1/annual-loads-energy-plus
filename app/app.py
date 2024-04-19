@@ -91,8 +91,7 @@ def main(platform):
         display_baseline_results(
             baseline_col, st.session_state.baseline_sql_results,
             st.session_state.heat_cop, st.session_state.cool_cop,
-            st.session_state.ip_units, st.session_state.normalize,
-            st.session_state.pci_target
+            st.session_state.ip_units, st.session_state.normalize
         )
         
 
@@ -100,8 +99,7 @@ def main(platform):
             improved_col, 
             st.session_state.improved_sql_results,
             st.session_state.heat_cop, st.session_state.cool_cop,
-            st.session_state.ip_units, st.session_state.normalize,
-            st.session_state.appendix_g_summary
+            st.session_state.ip_units, st.session_state.normalize
         )
 
         # Allow to download the model

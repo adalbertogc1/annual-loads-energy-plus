@@ -104,6 +104,8 @@ def initialize():
     # output session
     if 'sql_baseline' not in st.session_state:
         st.session_state.sql_baseline = None
+    if 'sql_improved' not in st.session_state:
+        st.session_state.sql_improved = None
     if 'baseline_sql_results' not in st.session_state:
         st.session_state.baseline_sql_results = None
     if 'improved_sql_results' not in st.session_state:

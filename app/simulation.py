@@ -18,8 +18,7 @@ from honeybee_energy.run import prepare_idf_for_simulation, output_energyplus_fi
 from honeybee_energy.writer import energyplus_idf_version
 from honeybee_energy.config import folders as energy_folders
 import streamlit as st
-from honeybee_energy.baseline.pci import pci_target_from_baseline_sql
-from honeybee_energy.baseline.result import appendix_g_summary
+
 
 VALIDTIMESTEPS = (1, 2, 3, 4, 5, 6, 10, 12, 15, 20, 30, 60)
 
@@ -290,8 +289,6 @@ def run_baseline_simulation(container,target_folder, user_id, hb_model, epw_path
         if st.session_state.sql_baseline  is not None and os.path.isfile(st.session_state.sql_baseline ):
             st.session_state.baseline_sql_results = load_sql_data(st.session_state.sql_baseline , st.session_state.hb_model_baseline)
             baseline_button_holder.write('')
-            st.session_state.pci_target =pci_target_from_baseline_sql(st.session_state.sql_baseline ,st.session_state.climate_zone,building_type=st.session_state.building_type,electricity_cost=st.session_state.electricity_cost, natural_gas_cost=st.session_state.natural_gas_cost)
-
 
 
 def run_improved_simulation(container, target_folder, user_id, hb_model, epw_path, ddy_path, north):
@@ -321,13 +318,11 @@ def run_improved_simulation(container, target_folder, user_id, hb_model, epw_pat
 
         # create simulation parameters for the coarsest/fastest E+ sim possible
         sim_par = get_simulation_parameters(ddy_path)
-        sql_improved =  simulation_job(sim_par, hb_model, target_folder,user_id, epw_path, north)
+        st.session_state.sql_improved =  simulation_job(sim_par, hb_model, target_folder,user_id, epw_path, north)
         
-        if sql_improved is not None and os.path.isfile(sql_improved):
-            st.session_state.improved_sql_results = load_sql_data(sql_improved, hb_model)
+        if st.session_state.sql_improved is not None and os.path.isfile(st.session_state.sql_improved):
+            st.session_state.improved_sql_results = load_sql_data(st.session_state.sql_improved, hb_model)
             improved_button_holder.write('')
-            if st.session_state.sql_baseline:
-                st.session_state.appendix_g_summary =appendix_g_summary(sql_improved, st.session_state.sql_baseline,st.session_state.climate_zone,building_type=st.session_state.building_type,electricity_cost=st.session_state.electricity_cost, natural_gas_cost=st.session_state.natural_gas_cost)
 
 
 
