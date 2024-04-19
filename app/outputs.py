@@ -3,6 +3,8 @@ from ladybug.color import Colorset
 from ladybug.legend import LegendParameters
 from ladybug.monthlychart import MonthlyChart
 import pandas as pd
+import streamlit as st
+import altair as alt
 
 def display_results(container, sql_results, heat_cop, cool_cop, ip_units, normalize, extra_info = None, extra_info_name=""):
     """Create the charts and metrics from the loaded sql results of the simulation.
@@ -55,61 +57,102 @@ def display_results(container, sql_results, heat_cop, cool_cop, ip_units, normal
     container.header('Total Load: {} {}'.format(val, display_units))
 
     # add metrics for the individual load components
+    eui_dict = {}
     eui_cols = container.columns(len(load_terms))
     for d, col in zip(load_terms, eui_cols):
         val = '{:.1f}'.format(d.total) if normalize else '{:,.0f}'.format(d.total)
         col.metric(d.header.metadata['type'], val)
-
-    # plot the monthly data collections on a bar chart
-    leg_par = LegendParameters(colors=load_colors)
-    leg_par.decimal_count = 0
-    month_chart = MonthlyChart(load_terms, leg_par, stack=True)
-    figure = month_chart.plot(title='Monthly Load')
-    container.plotly_chart(figure)
+        #eui_dict[f"{d.header.metadata['type']}"] = {"Baseline":val}
+        eui_dict[f"{d.header.metadata['type']}"] = val
 
 
-    # create a monthly chart with the load balance
-    bal_colors = Colorset()[19]
-    leg_par = LegendParameters(colors=bal_colors)
-    leg_par.decimal_count = 0
-    month_chart = MonthlyChart(balance, leg_par, stack=True)
-    figure = month_chart.plot(title='Monthly Load Balance')
-    container.plotly_chart(figure)
+        
 
+    if st.session_state.reporting_frequency == "Monthly":
 
-    # process all of the detailed room results into a table
-    container.write('Room Summary ({})'.format(display_units))
-    table_data = {'Room': []}
-    load_types = [dat.header.metadata['type'] for dat in load_terms]
-    for lt in load_types:
-        table_data[lt] = []
-    for room_data in room_results.values():
-        name, fa, mult, res = room_data
-        table_data['Room'].append(name)
+        # plot the monthly data collections on a bar chart
+        leg_par = LegendParameters(colors=load_colors)
+        leg_par.decimal_count = 0
+        month_chart = MonthlyChart(load_terms, leg_par, stack=True)
+        figure = month_chart.plot(title='Monthly Load')
+        container.plotly_chart(figure)
+
+        # create a monthly chart with the load balance
+        bal_colors = Colorset()[19]
+        leg_par = LegendParameters(colors=bal_colors)
+        leg_par.decimal_count = 0
+        month_chart = MonthlyChart(balance, leg_par, stack=True)
+        figure = month_chart.plot(title='Monthly Load Balance')
+        container.plotly_chart(figure)
+
+        # process all of the detailed room results into a table
+        container.write('Room Summary ({})'.format(display_units))
+        table_data = {'Room': []}
+        load_types = [dat.header.metadata['type'] for dat in load_terms]
         for lt in load_types:
-            try:
-                val = res[lt] if normalize else res[lt] * fa * mult
-                table_data[lt].append(val)
-            except KeyError:
-                table_data[lt].append(0.0)
-    # perform any unit conversions on the table data
-    if ip_units:
-        conv = 0.316998 if normalize else 3.41214
+            table_data[lt] = []
+        for room_data in room_results.values():
+            name, fa, mult, res = room_data
+            table_data['Room'].append(name)
+            for lt in load_types:
+                try:
+                    val = res[lt] if normalize else res[lt] * fa * mult
+                    table_data[lt].append(val)
+                except KeyError:
+                    table_data[lt].append(0.0)
+        # perform any unit conversions on the table data
+        if ip_units:
+            conv = 0.316998 if normalize else 3.41214
+            for col, dat in table_data.items():
+                if col != 'Room':
+                    table_data[col] = [val * conv for val in table_data[col]]
+        if cool_cop != 1:
+            table_data['Cooling'] = [val / cool_cop for val in table_data['Cooling']]
+        if heat_cop != 1:
+            table_data['Heating'] = [val / heat_cop for val in table_data['Heating']]
+        # add a column for the total data of each room
+        totals = [0] * len(table_data['Cooling'])
         for col, dat in table_data.items():
             if col != 'Room':
-                table_data[col] = [val * conv for val in table_data[col]]
-    if cool_cop != 1:
-        table_data['Cooling'] = [val / cool_cop for val in table_data['Cooling']]
-    if heat_cop != 1:
-        table_data['Heating'] = [val / heat_cop for val in table_data['Heating']]
-    # add a column for the total data of each room
-    totals = [0] * len(table_data['Cooling'])
-    for col, dat in table_data.items():
-        if col != 'Room':
-            for i, v in enumerate(dat):
-                totals[i] += v
-    table_data['Total'] = totals
-    container.dataframe(table_data)
+                for i, v in enumerate(dat):
+                    totals[i] += v
+        table_data['Total'] = totals
+        container.dataframe(table_data)
+    
+    elif st.session_state.reporting_frequency == "Annual":
+
+        container.json(eui_dict)
+
+        # Convert the dictionary into a DataFrame and ensure values are floats
+        df = pd.DataFrame(list(eui_dict.items()), columns=['Category', 'Value'])
+        df['Value'] = df['Value'].astype(float)  # Convert Value column to float
+
+        # Create a single cumulative stacked bar chart
+        df['Total'] = 'EUI [kWh/m2]'
+
+        # Calculate the total to set the y-axis limit
+        total = df['Value'].sum()
+        y_max = total * 1.15  # Extend the y-axis to 115% of the total value
+
+        chart = alt.Chart(df).mark_bar(
+            stroke='black',  # Add black contour line around bars
+            strokeWidth=2    # Set the thickness of the contour line
+        ).encode(
+            x='Total:N',
+            y=alt.Y('Value:Q', stack='zero', scale=alt.Scale(domain=[0, y_max])),
+            color=alt.Color('Category:N', scale=alt.Scale(domain=[
+                'Cooling', 'Heating', 'Lighting', 'Electric Equipment', 'Service Hot Water'
+            ], range=[
+                'darkblue', 'darkred', 'yellow', 'grey', 'orange'
+            ])),
+            tooltip=['Category', 'Value']
+        ).properties(
+            width=600,
+            height=300
+        )
+
+        # Display the chart using Streamlit
+        st.altair_chart(chart, use_container_width=True)
 
     container.write('Building Level Summary ({})'.format(display_units))
     container.info("Coming Soon..")

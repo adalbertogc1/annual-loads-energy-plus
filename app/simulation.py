@@ -24,7 +24,7 @@ from honeybee_energy.baseline.result import appendix_g_summary
 VALIDTIMESTEPS = (1, 2, 3, 4, 5, 6, 10, 12, 15, 20, 30, 60)
 
 
-REPORTINGFREQUENCIES = ("Annual", "Monthly", "Daily")
+REPORTINGFREQUENCIES = ("Annual", "Monthly")
 
 
 
@@ -215,7 +215,7 @@ def get_simulation_parameters(ddy_path = None):
     sim_par.shadow_calculation.calculation_frequency = st.session_state.calculation_frequency if st.session_state.calculation_frequency else int(30)
     sim_par.terrain_type = str(st.session_state.terrain_type) if st.session_state.terrain_type else str("City")
     sim_par.output.add_zone_energy_use()
-    sim_par.output.reporting_frequency = st.session_state.reporting_frequency
+    sim_par.output.reporting_frequency = "Monthly" #st.session_state.reporting_frequency
     sim_par.output.add_output(gl_el_equip_out)
     sim_par.output.add_output(gl_gas_equip_out)
     sim_par.output.add_output(gl1_shw_out)
@@ -345,6 +345,10 @@ def get_sim_inputs(host: str, container):
     if in_normalize != st.session_state.normalize:
         st.session_state.normalize = in_normalize
 
+    in_reporting_frequency = s_col_2.radio("Reporting Frequency: ", REPORTINGFREQUENCIES, index = REPORTINGFREQUENCIES.index(st.session_state.reporting_frequency), horizontal= True, disabled= False)
+    if in_reporting_frequency != st.session_state.reporting_frequency:
+        st.session_state.reporting_frequency = in_reporting_frequency
+
     s_col_1.text("ASHRAE Baseline Settings:")
     in_lighting_by_building = s_col_1.checkbox(label='Use lighting by building?', value=st.session_state.lighting_by_building, help= "Assigns lighting gains for the entire building base solely on building type. Useful for quick assessments.")
     if in_lighting_by_building != st.session_state.lighting_by_building:
@@ -366,20 +370,16 @@ def get_sim_inputs(host: str, container):
 
     if s_col_1.checkbox(label='Advanced simulation settings', value=False, help = "Deafult settings are optimized for speed over fidelity. Change only for specific cases."):
         #
-        in_reporting_frequency = s_col_1.radio("Reporting Frequency: ", REPORTINGFREQUENCIES, index = REPORTINGFREQUENCIES.index(st.session_state.reporting_frequency), horizontal= True, disabled= False)
-        if in_reporting_frequency != st.session_state.reporting_frequency:
-            st.session_state.reporting_frequency = in_reporting_frequency
-            st.session_state.sql_results = None
-
+        
         in_terrain_type = s_col_1.selectbox("Terrain type", ['Ocean', 'Country', 'Suburbs', 'Urban', 'City'], index=4,  help="Text for the terrain type in which the model sits.")
         if in_terrain_type != st.session_state.terrain_type:
             st.session_state.terrain_type = in_terrain_type
-            st.session_state.sql_results = None  # reset to have results recomputed
+
 
         in_timestep = s_col_1.selectbox("Timesteps per hour",VALIDTIMESTEPS,index=0,  help="An integer for the number of timesteps per hour at which the calculation will be run.")
         if in_timestep != st.session_state.timestep:
             st.session_state.timestep = in_timestep
-            st.session_state.sql_results = None  # reset to have results recomputed
+
         
         in_solar_distribution = s_col_1.selectbox("Solar distribution",options=('MinimalShadowing', 'FullExterior', 'FullInteriorAndExterior', 'FullExteriorWithReflections', 'FullInteriorAndExteriorWithReflections'), 
             index=1,  # Default to 'FullExterior'
@@ -387,11 +387,11 @@ def get_sim_inputs(host: str, container):
         )
         if in_solar_distribution != st.session_state.solar_distribution:
             st.session_state.solar_distribution = in_solar_distribution
-            st.session_state.sql_results = None  # reset to have results recomputed
+
 
         in_calculation_frequency = s_col_1.selectbox("Calculation frequency",options=('1', '30'), index=1,  # Default to '30'
             help="Integer for the number of days in each period for which a unique shadow calculation will be performed. ."
         )
         if in_calculation_frequency != st.session_state.calculation_frequency:
             st.session_state.calculation_frequency = in_calculation_frequency
-            st.session_state.sql_results = None  # reset to have results recomputed
+
