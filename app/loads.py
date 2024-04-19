@@ -63,8 +63,8 @@ def iterate_rooms_and_display_properties():
             if new_room_prog != room.properties.energy.program_type.identifier:
                 new_program_type = program_type_by_identifier(new_room_prog)
                 room.properties.energy.program_type = new_program_type
-                st.session_state.baseline_sql_results = None
-                st.session_state.improved_sql_results = None  # reset to have results recomputed
+                #st.session_state.baseline_sql_results = None
+                #st.session_state.improved_sql_results = None  # reset to have results recomputed
             else:
                 # Duplicate the program type to ensure any modifications are made on a new instance, preserving the original object's state.
                 new_program_type = room.properties.energy.program_type
@@ -213,6 +213,6 @@ def iterate_rooms_and_display_properties():
             # Assign the updated program type back to the original ProgramType
             if room.properties.energy.program_type != new_program_type:
                 room.properties.energy.program_type = new_program_type
-                st.session_state.baseline_sql_results = None
-                st.session_state.improved_sql_results = None
+                #st.session_state.baseline_sql_results = None
+                #st.session_state.improved_sql_results = None
 

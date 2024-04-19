@@ -89,7 +89,7 @@ def initialize():
     if "reporting_frequency" not in st.session_state:
         st.session_state.reporting_frequency = None
     if "lighting_by_building" not in st.session_state:
-        st.session_state.lighting_by_building = False
+        st.session_state.lighting_by_building = None
     if 'ip_units' not in st.session_state:
         st.session_state.ip_units = False
     if 'upload_ddy' not in st.session_state:
@@ -121,8 +121,8 @@ def new_model():
     # reset the simulation results and get the file data
     st.session_state.vtk_path = None
     st.session_state.valid_report = None
-    st.session_state.baseline_sql_results = None
-    st.session_state.improved_sql_results = None
+    #st.session_state.baseline_sql_results = None
+    #st.session_state.improved_sql_results = None
     # load the model object from the file data
     if 'hbjson' in st.session_state['hbjson_data']:
         hbjson_data = st.session_state['hbjson_data']['hbjson']
@@ -298,8 +298,8 @@ def geometry_wizard(container):
         clear_temp_folder()
         generate_building(st.session_state.footprint, st.session_state.floor_height, st.session_state.no_of_floors)
         generate_honeybee_model()
-        st.session_state.baseline_sql_results = None
-        st.session_state.improved_sql_results = None
+        #st.session_state.baseline_sql_results = None
+        #st.session_state.improved_sql_results = None
     # add options to preview the model in 3D and validate it
     if st.session_state.hb_model:
         if g_col_2.checkbox(label='Preview Model', value=False):

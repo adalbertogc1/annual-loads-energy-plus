@@ -346,16 +346,16 @@ def get_sim_inputs(host: str, container):
     if in_normalize != st.session_state.normalize:
         st.session_state.normalize = in_normalize
 
-    in_reporting_frequency = s_col_2.radio("Reporting Frequency: ", REPORTINGFREQUENCIES, index = REPORTINGFREQUENCIES.index(st.session_state.reporting_frequency) if st.session_state.reporting_frequency else 0, horizontal= True, disabled= False)
+    in_reporting_frequency = s_col_2.radio("Reporting Frequency: ", REPORTINGFREQUENCIES, index =  0, horizontal= True, disabled= False)
     if in_reporting_frequency != st.session_state.reporting_frequency:
         st.session_state.reporting_frequency = in_reporting_frequency
 
     s_col_1.text("ASHRAE Baseline Settings:")
-    in_lighting_by_building = s_col_1.checkbox(label='Use lighting by building?', value=st.session_state.lighting_by_building, help= "Assigns lighting gains for the entire building base solely on building type. Useful for quick assessments.")
+    in_lighting_by_building = s_col_1.checkbox(label='Use lighting by building?', value=False, help= "Assigns lighting gains for the entire building base solely on building type. Useful for quick assessments.")
     if in_lighting_by_building != st.session_state.lighting_by_building:
         st.session_state.in_lighting_by_building = in_lighting_by_building
-        st.session_state.baseline_sql_results = None
-        st.session_state.improved_sql_results = None
+        #st.session_state.baseline_sql_results = None
+        #st.session_state.improved_sql_results = None
     s_col_1_1,s_col_1_2 = s_col_1.columns(2)
     in_electricity_cost = s_col_1_1.number_input("Electricity cost",step= 0.01, min_value=0.0, max_value= 10.0, value=st.session_state.electricity_cost)
     if in_electricity_cost != st.session_state.electricity_cost:

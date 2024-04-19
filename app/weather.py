@@ -7,8 +7,8 @@ from utils import get_weather_files_from_url
 def new_weather_file():
     """Process a newly-uploaded EPW file."""
     # reset the simulation results and get the file data
-    st.session_state.baseline_sql_results = None
-    st.session_state.improved_sql_results = None
+    #st.session_state.baseline_sql_results = None
+    #st.session_state.improved_sql_results = None
     st.session_state.epw_path = None
     epw_file = st.session_state.epw_data
     if epw_file:
@@ -36,8 +36,8 @@ def new_weather_file():
 def new_design_file():
     """Process a newly-uploaded DDY file."""
     # reset the simulation results and get the file data
-    st.session_state.baseline_sql_results = None
-    st.session_state.improved_sql_results = None
+    #st.session_state.baseline_sql_results = None
+    #st.session_state.improved_sql_results = None
     ddy_file = st.session_state.ddy_data
     if ddy_file:
         # save DDY in data folder
@@ -104,14 +104,14 @@ def get_weather_inputs(host: str, container):
     if weather_method_in == "EPW Map":
         url = "https://www.ladybug.tools/epwmap/"
         w_col_1.markdown("*Go to [EPW Map](%s) and copy the URL of any weather station.*" % url)
-        weather_url_ = w_col_1.text_input('EPW Map URL', 'https://climate.onebuilding.org/WMO_Region_4_North_and_Central_America/MEX_Mexico/CMX_Cuidad_de_Mexico/MEX_CMX_Cuidad.Mexico-Mexico.City.Intl.AP-Juarez.Intl.AP.766793_TMYx.2004-2018.zip')
+        weather_url_ = w_col_1.text_input('EPW Map URL', 'https://energyplus-weather.s3.amazonaws.com/north_and_central_america_wmo_region_4/MEX/MEX_Mexico.City.766790_IWEC/MEX_Mexico.City.766790_IWEC.zip')
         # simulate the model if the button is pressed
         button_holder = w_col_1.empty()
         if button_holder.button('Download weather file'):
             st.session_state.epw_path = None
             get_weather_files_from_url(weather_url_)
-            st.session_state.baseline_sql_results = None
-            st.session_state.improved_sql_results = None
+            #st.session_state.baseline_sql_results = None
+            #st.session_state.improved_sql_results = None
     else:
         get_weather_file(w_col_1)
 

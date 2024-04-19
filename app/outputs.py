@@ -60,18 +60,22 @@ def display_baseline_results(container, sql_results, heat_cop, cool_cop, ip_unit
 
     # add metrics for the individual load components
     eui_dict = {}
-    eui_cols = container.columns(len(load_terms))
-    for d, col in zip(load_terms, eui_cols):
+    for d in load_terms:
         eui_dict[f"{d.header.metadata['type']}"] = round(d.total, 1)
         
 
     if st.session_state.reporting_frequency == "Monthly":
         
         # add metrics for the individual load components
-        for d, col in zip(load_terms, eui_cols):
+        eui_cols = container.columns(len(load_terms[:3]))
+        for d, col in zip(load_terms[:3], eui_cols):
             val = '{:.1f}'.format(d.total) if normalize else '{:,.0f}'.format(d.total)
             col.metric(d.header.metadata['type'], val)
 
+        eui_cols = container.columns(len(load_terms[3:]))
+        for d, col in zip(load_terms[3:], eui_cols):
+            val = '{:.1f}'.format(d.total) if normalize else '{:,.0f}'.format(d.total)
+            col.metric(d.header.metadata['type'], val)
 
         # plot the monthly data collections on a bar chart
         leg_par = LegendParameters(colors=load_colors)
@@ -213,15 +217,20 @@ def display_improved_results(container, sql_results, heat_cop, cool_cop, ip_unit
 
     # add metrics for the individual load components
     eui_dict = {}
-    eui_cols = container.columns(len(load_terms))
-    for d, col in zip(load_terms, eui_cols):
+    for d in load_terms:
         eui_dict[f"{d.header.metadata['type']}"] = round(d.total, 1)
         
 
     if st.session_state.reporting_frequency == "Monthly":
         
         # add metrics for the individual load components
-        for d, col in zip(load_terms, eui_cols):
+        eui_cols = container.columns(len(load_terms[:3]))
+        for d, col in zip(load_terms[:3], eui_cols):
+            val = '{:.1f}'.format(d.total) if normalize else '{:,.0f}'.format(d.total)
+            col.metric(d.header.metadata['type'], val)
+
+        eui_cols = container.columns(len(load_terms[3:]))
+        for d, col in zip(load_terms[3:], eui_cols):
             val = '{:.1f}'.format(d.total) if normalize else '{:,.0f}'.format(d.total)
             col.metric(d.header.metadata['type'], val)
 

@@ -72,45 +72,45 @@ def main(platform):
         # preview the model and/or run the simulation
         # simulate the model if the button is pressed
         baseline_col, improved_col = out_container.columns(2)
+        with baseline_col:
+            run_baseline_simulation(
+                st,
+                st.session_state.target_folder, st.session_state.user_id,
+                st.session_state.hb_model,
+                st.session_state.epw_path, st.session_state.ddy_path)
+            # create the resulting charts
 
-        run_baseline_simulation(
-            baseline_col,
-            st.session_state.target_folder, st.session_state.user_id,
-            st.session_state.hb_model,
-            st.session_state.epw_path, st.session_state.ddy_path)
+            display_baseline_results(
+                st, st.session_state.baseline_sql_results,
+                st.session_state.heat_cop, st.session_state.cool_cop,
+                st.session_state.ip_units, st.session_state.normalize
+            )
+
+            if st.session_state.hb_model_baseline:
+                dt = datetime.now().strftime("%Y_%m_%d-%I_%M_%S_%p")
+                st.download_button(label="Download baseline HBJSON",data=json.dumps(st.session_state.hb_model_baseline.to_dict()),file_name=f"HBmodel_{dt}.json",mime="application/json")
         
-        run_improved_simulation(
-            improved_col,
-            st.session_state.target_folder, st.session_state.user_id,
-            st.session_state.hb_model,
-            st.session_state.epw_path, st.session_state.ddy_path,
-            st.session_state.north)
+        with improved_col:
+            run_improved_simulation(
+                st,
+                st.session_state.target_folder, st.session_state.user_id,
+                st.session_state.hb_model,
+                st.session_state.epw_path, st.session_state.ddy_path,
+                st.session_state.north)
 
-        # create the resulting charts
 
-        display_baseline_results(
-            baseline_col, st.session_state.baseline_sql_results,
-            st.session_state.heat_cop, st.session_state.cool_cop,
-            st.session_state.ip_units, st.session_state.normalize
-        )
-        
+            display_improved_results(
+                st, 
+                st.session_state.improved_sql_results,
+                st.session_state.heat_cop, st.session_state.cool_cop,
+                st.session_state.ip_units, st.session_state.normalize
+            )
+            if st.session_state.hb_model_baseline:
+                    dt = datetime.now().strftime("%Y_%m_%d-%I_%M_%S_%p")
+                    st.download_button(label="Download improved HBJSON",data=json.dumps(st.session_state.hb_model.to_dict()),file_name=f"HBmodel_{dt}.json",mime="application/json")
 
-        display_improved_results(
-            improved_col, 
-            st.session_state.improved_sql_results,
-            st.session_state.heat_cop, st.session_state.cool_cop,
-            st.session_state.ip_units, st.session_state.normalize
-        )
-
-        # Allow to download the model
-        if st.session_state.hb_model_baseline:
-            dt = datetime.now().strftime("%Y_%m_%d-%I_%M_%S_%p")
-            button_holder1 = baseline_col.container()
-            button_holder1.download_button(label="Download baseline HBJSON",data=json.dumps(st.session_state.hb_model_baseline.to_dict()),file_name=f"HBmodel_{dt}.json",mime="application/json")
-
-            button_holder2 = improved_col.container()
-            button_holder2.download_button(label="Download improved HBJSON",data=json.dumps(st.session_state.hb_model.to_dict()),file_name=f"HBmodel_{dt}.json",mime="application/json")
-
+                
+            
 
 if __name__ == '__main__':
     # get the platform from the query uri
