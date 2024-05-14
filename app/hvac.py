@@ -1,6 +1,7 @@
 from honeybee_energy.altnumber import Autosize
 from honeybee.altnumber import NoLimit
 import copy
+import uuid
 
 ROOM_EQUIPMENT= ("ForcedAirFurnace","PSZ","PTAC","PVAV","VAV","FCUwithDOAS","RadiantwithDOAS","VRFwithDOAS","WSHPwithDOAS","Baseboard","EvaporativeCooler",
             "FCU","GasUnitHeater","Radiant","Residential","VRF","WindowAC","WSHP", 'IdealAirSystem', "Not Conditioned")
@@ -726,7 +727,7 @@ def assign_hvac_system(st, room, new_hvac, equipment_type):
         #room.properties.energy.hvac = get_IdealAirSystem(st,room)
         from honeybee_energy.hvac.idealair import IdealAirSystem
         # Instantiate the IdealAirSystem with a unique identifier
-        identifier = f"IdealAirSystem-{room.identifier}"
+        identifier = f"IdealAirSystem-{room.identifier}-{str(uuid.uuid4())[:6]}"
         ideal_air_system = IdealAirSystem(identifier)
         room.properties.energy.hvac = ideal_air_system.from_dict(new_hvac.to_dict())
     
