@@ -635,7 +635,52 @@ def get_IdealAirSystem(st, room):
 
     return ideal_air_system
 
-def assign_hvac_system(st, room, equipment_type):
+def define_hvac_system(st, room, equipment_type):
+
+    if equipment_type == "ForcedAirFurnace":
+        new_hvac = get_ForcedAirFurnace(st, room)
+    elif equipment_type == "PSZ":
+        new_hvac = get_PSZSystem(st, room)
+    elif equipment_type == "PTAC":
+        new_hvac = get_PTACSystem(st, room)
+    elif equipment_type == "PVAV":
+        new_hvac = get_PVAVSystem(st, room)
+    elif equipment_type == "VAV":
+        new_hvac = get_VAVSystem(st, room)
+    elif equipment_type == "FCUwithDOAS":
+        new_hvac = get_FCUwithDOASSystem(st, room)
+    elif equipment_type == "VRFwithDOAS":
+        new_hvac = get_VRFwithDOASSystem(st, room)
+    elif equipment_type == "RadiantwithDOAS":
+        new_hvac = get_RadiantwithDOASSystem(st, room)
+    elif equipment_type == "WSHPwithDOAS":
+        new_hvac = get_WSHPwithDOASSystem(st, room)
+    elif equipment_type == "Baseboard":
+        new_hvac = get_BaseboardSystem(st, room)
+    elif equipment_type == "EvaporativeCooler":
+        new_hvac = get_EvaporativeCoolerSystem(st, room)
+    elif equipment_type == "FCU":
+        new_hvac = get_FCUSystem(st, room)
+    elif equipment_type == "GasUnitHeater":
+        new_hvac = get_GasUnitHeaterSystem(st, room)
+    elif equipment_type == "Radiant":
+        new_hvac = get_RadiantSystem(st, room)
+    elif equipment_type == "VRF":
+        new_hvac = get_VRFSystem(st, room)
+    elif equipment_type == "WindowAC":
+        new_hvac = get_WindowACSystem(st, room)
+    elif equipment_type == "WSHP":
+        new_hvac = get_WSHPSystem(st, room)
+    elif equipment_type == "Not Conditioned":
+        new_hvac = None
+    elif equipment_type == "IdealAirSystem":
+        new_hvac = get_IdealAirSystem(st,room)
+    
+    return new_hvac
+    
+
+
+def assign_hvac_system(st, room, new_hvac, equipment_type):
     if room.properties.energy.hvac:
         system_old = copy.deepcopy(room.properties.energy.hvac.to_dict()) # Use deepcopy to handle nested dicts correctly
     else:
@@ -678,8 +723,14 @@ def assign_hvac_system(st, room, equipment_type):
     elif equipment_type == "Not Conditioned":
         room.properties.energy.hvac = None
     elif equipment_type == "IdealAirSystem":
-        room.properties.energy.hvac = get_IdealAirSystem(st,room)
+        #room.properties.energy.hvac = get_IdealAirSystem(st,room)
+        from honeybee_energy.hvac.idealair import IdealAirSystem
+        # Instantiate the IdealAirSystem with a unique identifier
+        identifier = f"IdealAirSystem-{room.identifier}"
+        ideal_air_system = IdealAirSystem(identifier)
+        room.properties.energy.hvac = ideal_air_system.from_dict(new_hvac.to_dict())
     
+    room.properties.energy.hvac = new_hvac
     if room.properties.energy.hvac:
         system_new = room.properties.energy.hvac.to_dict()
     else:
@@ -689,7 +740,7 @@ def assign_hvac_system(st, room, equipment_type):
         st.session_state.baseline_sql_results = None
         st.session_state.improved_sql_results = None
 
-def iterate_rooms_hvac(st):
+def assign_rooms_hvac(st):
    
     for room in st.session_state.hb_model.rooms:
         with st.expander(f"Room identifier: {room.identifier}"):
@@ -700,4 +751,40 @@ def iterate_rooms_hvac(st):
                 attributes = {"type": "IdealAirSystem"}
                 
             equipment_type = st.selectbox("Type", ROOM_EQUIPMENT,index=ROOM_EQUIPMENT.index(attributes["type"]),key=f"equipment_subtype-{room.identifier}")
-            assign_hvac_system(st, room, equipment_type)
+            new_hvac = define_hvac_system(st, room, equipment_type)
+            assign_hvac_system(st, room, new_hvac,equipment_type)
+        
+
+def assign_building_hvac(st):
+
+    first_room = st.session_state.hb_model.rooms[0].duplicate()
+    st.write("HVAC Settings:")
+    if first_room.properties.energy.hvac:
+        attributes = first_room.properties.energy.hvac.to_dict()
+    else:
+        attributes = {"type": "IdealAirSystem"}
+    
+    equipment_type = st.selectbox("Type", ROOM_EQUIPMENT,index=ROOM_EQUIPMENT.index(attributes["type"]),key=f"equipment_subtype-{first_room.identifier}")  
+    new_hvac = define_hvac_system(st, first_room, equipment_type)
+    
+    for room in st.session_state.hb_model.rooms:
+        if room.properties.energy.hvac:
+            if room.properties.energy.hvac.to_dict() != new_hvac.to_dict():
+                assign_hvac_system(st, room, new_hvac,equipment_type)
+        else:
+            assign_hvac_system(st, room, new_hvac,equipment_type)
+
+                #first_room.properties.energy.hvac.identifier = room.properties.energy.hvac.identifier
+                #room.properties.energy.hvac = first_room.properties.energy.hvac
+                #TODO - 
+
+
+def assign_hvac(st):
+    in_model_source = st.radio("Select HVAC assignment method:", ("Whole building","Room based"))
+    if in_model_source == "Whole building":
+        assign_building_hvac(st)
+    else:
+        assign_rooms_hvac(st)
+
+
+    
