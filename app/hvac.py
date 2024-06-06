@@ -686,7 +686,7 @@ def assign_hvac_system(st, room, equipment_type):
         system_new = ""
     
     if system_old != system_new:
-        st.session_state.baseline_sql_results = None
+        #st.session_state.baseline_sql_results = None
         st.session_state.improved_sql_results = None
 
 def iterate_rooms_hvac(st):

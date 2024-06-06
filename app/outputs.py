@@ -143,7 +143,7 @@ def display_baseline_results(container, sql_results, heat_cop, cool_cop, ip_unit
 
         chart = alt.Chart(df).mark_bar(
             stroke='black',  # Add black contour line around bars
-            strokeWidth=2    # Set the thickness of the contour line
+            strokeWidth=1    # Set the thickness of the contour line
         ).encode(
             x='Total:N',
             y=alt.Y(f'{y_axis_name}:Q', stack='zero', scale=alt.Scale(domain=[0, y_max])),
@@ -161,9 +161,9 @@ def display_baseline_results(container, sql_results, heat_cop, cool_cop, ip_unit
         # Display the chart using Streamlit
         container.altair_chart(chart, use_container_width=True)
 
-    container.write( 'Price Cost Index Target ({})'.format(display_units))
-    st.session_state.pci_target =pci_target_from_baseline_sql(st.session_state.sql_baseline ,st.session_state.climate_zone,building_type=st.session_state.building_type,electricity_cost=st.session_state.electricity_cost, natural_gas_cost=st.session_state.natural_gas_cost)
-    container.json(st.session_state.pci_target)
+    #container.write( 'Performance Cost Index Target ({})'.format(display_units))
+    #st.session_state.pci_target =pci_target_from_baseline_sql(st.session_state.sql_baseline ,st.session_state.climate_zone,building_type=st.session_state.building_type,electricity_cost=st.session_state.electricity_cost, natural_gas_cost=st.session_state.natural_gas_cost)
+    #container.json(st.session_state.pci_target)
 
 
 
@@ -321,7 +321,8 @@ def display_improved_results(container, sql_results, heat_cop, cool_cop, ip_unit
 
     if st.session_state.sql_baseline:
         container.write('Appendix G summary ({})'.format(display_units))
-        st.session_state.appendix_g_summary =appendix_g_summary(st.session_state.sql_improved, st.session_state.sql_baseline,st.session_state.climate_zone,building_type=st.session_state.building_type,electricity_cost=st.session_state.electricity_cost, natural_gas_cost=st.session_state.natural_gas_cost)
+
+        st.session_state.appendix_g_summary =appendix_g_summary(st.session_state.sql_improved, [st.session_state.sql_baseline],st.session_state.climate_zone,building_type=st.session_state.building_type,electricity_cost=st.session_state.electricity_cost, natural_gas_cost=st.session_state.natural_gas_cost)
         container.json(st.session_state.appendix_g_summary)
 
 

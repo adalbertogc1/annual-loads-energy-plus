@@ -72,11 +72,13 @@ def main(platform):
         # preview the model and/or run the simulation
         # simulate the model if the button is pressed
         baseline_col, improved_col = out_container.columns(2)
+        st.session_state.hb_model_baseline = st.session_state.hb_model.duplicate()
+        
         with baseline_col:
             run_baseline_simulation(
                 st,
                 st.session_state.target_folder, st.session_state.user_id,
-                st.session_state.hb_model,
+                st.session_state.hb_model_baseline,
                 st.session_state.epw_path, st.session_state.ddy_path)
             # create the resulting charts
 
@@ -86,9 +88,9 @@ def main(platform):
                 st.session_state.ip_units, st.session_state.normalize
             )
 
-            if st.session_state.hb_model_baseline:
-                dt = datetime.now().strftime("%Y_%m_%d-%I_%M_%S_%p")
-                st.download_button(label="Download baseline HBJSON",data=json.dumps(st.session_state.hb_model_baseline.to_dict()),file_name=f"HBmodel_{dt}.json",mime="application/json")
+        if st.session_state.hb_model_baseline:
+            dt = datetime.now().strftime("%Y_%m_%d-%I_%M_%S_%p")
+            baseline_col.download_button(label="Download baseline HBJSON",data=json.dumps(st.session_state.hb_model_baseline.to_dict()),file_name=f"HBmodel_{dt}.json",mime="application/json")
         
         with improved_col:
             run_improved_simulation(
@@ -105,9 +107,10 @@ def main(platform):
                 st.session_state.heat_cop, st.session_state.cool_cop,
                 st.session_state.ip_units, st.session_state.normalize
             )
-            if st.session_state.hb_model_baseline:
-                dt = datetime.now().strftime("%Y_%m_%d-%I_%M_%S_%p")
-                st.download_button(label="Download improved HBJSON",data=json.dumps(st.session_state.hb_model.to_dict()),file_name=f"HBmodel_{dt}.json",mime="application/json")
+
+        if st.session_state.hb_model:
+            dt = datetime.now().strftime("%Y_%m_%d-%I_%M_%S_%p")
+            improved_col.download_button(label="Download improved HBJSON",data=json.dumps(st.session_state.hb_model.to_dict()),file_name=f"HBmodel_{dt}.json",mime="application/json")
 
             
             
