@@ -45,7 +45,7 @@ def assign_constructions():
                 new_construction_set = construction_set_by_identifier(new_construction_set)
                 room.properties.energy.construction_set = new_construction_set
                 #st.session_state.baseline_sql_results = None
-                #st.session_state.improved_sql_results = None
+                st.session_state.improved_sql_results = None
             else:
                 # Duplicate the program type to ensure any modifications are made on a new instance, preserving the original object's state.
                 new_construction_set = room.properties.energy.construction_set

@@ -226,7 +226,7 @@ def get_simulation_parameters(ddy_path = None):
         sim_par.sizing_parameter.add_from_ddy(ddy_path.as_posix())
     return sim_par
 
-def simulation_job(sim_par, hb_model, target_folder,user_id, epw_path, north =None):
+def simulation_job(sim_par, hb_model, target_folder,user_id, epw_path,sim_type, north =None):
     
     if north:
         sim_par.north_angle = float(north)
@@ -238,7 +238,7 @@ def simulation_job(sim_par, hb_model, target_folder,user_id, epw_path, north =No
     idf_str = '\n\n'.join([ver_str, sim_par_str, model_str])
 
     # write the final string into an IDF
-    directory = os.path.join(target_folder, 'data', user_id)
+    directory = os.path.join(target_folder, 'data', user_id,sim_type)
     idf = os.path.join(directory, 'in.idf')
     write_to_file_by_name(directory, 'in.idf', idf_str, True)
 
@@ -266,28 +266,28 @@ def run_baseline_simulation(container,target_folder, user_id, hb_model, epw_path
         north: Integer for the angle from the Y-axis where North is.
     """
     # check to be sure there is a model
-    if not hb_model or not epw_path or not ddy_path or \
-            st.session_state.baseline_sql_results is not None:
+    if not hb_model or not epw_path or not ddy_path:# or \
+            #st.session_state.baseline_sql_results is not None:
         return
 
-    st.session_state.hb_model_baseline = hb_model.duplicate()
+    #st.session_state.hb_model_baseline = hb_model.duplicate()
 
     baseline_button_holder = container.empty()
     if baseline_button_holder.button('Run Baseline Simulation'):
         # check to be sure that the Model has Rooms
-        assert len(st.session_state.hb_model_baseline.rooms) != 0, \
+        assert len(hb_model.rooms) != 0, \
             'Model has no Rooms and cannot be simulated in EnergyPlus.'
 
         # Convert to baseline if required:
-        model_to_baseline(st.session_state.hb_model_baseline,st.session_state.climate_zone, building_type=st.session_state.building_type, lighting_by_building= st.session_state.lighting_by_building)
+        model_to_baseline(hb_model,st.session_state.climate_zone, building_type=st.session_state.building_type, lighting_by_building= st.session_state.lighting_by_building)
 
         # create simulation parameters for the coarsest/fastest E+ sim possible
         sim_par = get_simulation_parameters(ddy_path)
 
-        st.session_state.sql_baseline  =  simulation_job(sim_par, st.session_state.hb_model_baseline, target_folder,user_id, epw_path)
+        st.session_state.sql_baseline  =  simulation_job(sim_par, hb_model, target_folder,user_id, epw_path,"baseline")
         
         if st.session_state.sql_baseline  is not None and os.path.isfile(st.session_state.sql_baseline ):
-            st.session_state.baseline_sql_results = load_sql_data(st.session_state.sql_baseline , st.session_state.hb_model_baseline)
+            st.session_state.baseline_sql_results = load_sql_data(st.session_state.sql_baseline , hb_model)
             #baseline_button_holder.write('')
 
 
@@ -304,8 +304,8 @@ def run_improved_simulation(container, target_folder, user_id, hb_model, epw_pat
         north: Integer for the angle from the Y-axis where North is.
     """
     # check to be sure there is a model
-    if not hb_model or not epw_path or not ddy_path or \
-            st.session_state.improved_sql_results is not None:
+    if not hb_model or not epw_path or not ddy_path:# or \
+            #st.session_state.improved_sql_results is not None:
         return
     
 
@@ -319,7 +319,7 @@ def run_improved_simulation(container, target_folder, user_id, hb_model, epw_pat
 
         # create simulation parameters for the coarsest/fastest E+ sim possible
         sim_par = get_simulation_parameters(ddy_path)
-        st.session_state.sql_improved =  simulation_job(sim_par, hb_model, target_folder,user_id, epw_path, north)
+        st.session_state.sql_improved =  simulation_job(sim_par, hb_model, target_folder,user_id, epw_path,"improved", north)
         
         if st.session_state.sql_improved is not None and os.path.isfile(st.session_state.sql_improved):
             st.session_state.improved_sql_results = load_sql_data(st.session_state.sql_improved, hb_model)
