@@ -5,8 +5,6 @@ from ladybug.monthlychart import MonthlyChart
 import pandas as pd
 import streamlit as st
 import altair as alt
-from honeybee_energy.baseline.pci import pci_target_from_baseline_sql
-from honeybee_energy.baseline.result import appendix_g_summary
 
 def get_sql_results(sql_results):
     load_terms = sql_results['load_terms'].copy()
@@ -16,14 +14,12 @@ def get_sql_results(sql_results):
     floor_area = sql_results['floor_area']
     return load_terms, load_colors, balance, room_results, floor_area
 
-def display_baseline_results(container, sql_results, heat_cop, cool_cop, ip_units, normalize):
+def display_baseline_results(container, sql_results, ip_units, normalize):
     """Create the charts and metrics from the loaded sql results of the simulation.
 
     Args:
         container: The streamlit container to which the charts will be added.
         sql_results: Dictionary of the EnergyPlus SQL results (or None).
-        heat_cop: Number for the heating COP.
-        cool_cop: Number for the cooling COP.
         ip_units: Boolean to indicate whether IP units should be used.
         normalize: Boolean to indicate whether data should be normalized by
             the Model floor area.
@@ -113,10 +109,7 @@ def display_baseline_results(container, sql_results, heat_cop, cool_cop, ip_unit
             for col, dat in table_data.items():
                 if col != 'Room':
                     table_data[col] = [val * conv for val in table_data[col]]
-        if cool_cop != 1:
-            table_data['Cooling'] = [val / cool_cop for val in table_data['Cooling']]
-        if heat_cop != 1:
-            table_data['Heating'] = [val / heat_cop for val in table_data['Heating']]
+
         # add a column for the total data of each room
         totals = [0] * len(table_data['Cooling'])
         for col, dat in table_data.items():
@@ -160,22 +153,19 @@ def display_baseline_results(container, sql_results, heat_cop, cool_cop, ip_unit
 
         # Display the chart using Streamlit
         container.altair_chart(chart, use_container_width=True)
-
-    #container.write( 'Performance Cost Index Target ({})'.format(display_units))
     #st.session_state.pci_target =pci_target_from_baseline_sql(st.session_state.sql_baseline ,st.session_state.climate_zone,building_type=st.session_state.building_type,electricity_cost=st.session_state.electricity_cost, natural_gas_cost=st.session_state.natural_gas_cost)
     #container.json(st.session_state.pci_target)
 
 
 
 
-def display_improved_results(container, sql_results, heat_cop, cool_cop, ip_units, normalize):
+def display_improved_results(container, sql_results, ip_units, normalize):
     """Create the charts and metrics from the loaded sql results of the simulation.
 
     Args:
         container: The streamlit container to which the charts will be added.
         sql_results: Dictionary of the EnergyPlus SQL results (or None).
-        heat_cop: Number for the heating COP.
-        cool_cop: Number for the cooling COP.
+
         ip_units: Boolean to indicate whether IP units should be used.
         normalize: Boolean to indicate whether data should be normalized by
             the Model floor area.
@@ -183,6 +173,7 @@ def display_improved_results(container, sql_results, heat_cop, cool_cop, ip_unit
     # get the session variables for the results
     if not sql_results:
         return
+    
     
     load_terms, load_colors, balance, room_results, floor_area = get_sql_results(sql_results)
 
@@ -204,11 +195,7 @@ def display_improved_results(container, sql_results, heat_cop, cool_cop, ip_unit
         load_terms = [data.aggregate_by_area(total_area, a_unit) for data in load_terms]
         balance = [data.aggregate_by_area(total_area, a_unit) for data in balance]
 
-    # multiply the results by the COP if it is not equal to 1
-    if cool_cop != 1:
-        load_terms[0] = load_terms[0] / cool_cop
-    if heat_cop != 1:
-        load_terms[1] = load_terms[1] / heat_cop
+
 
     # report the total load and the breakdown into different terms
     tot_ld = [dat.total for dat in load_terms]
@@ -271,10 +258,7 @@ def display_improved_results(container, sql_results, heat_cop, cool_cop, ip_unit
             for col, dat in table_data.items():
                 if col != 'Room':
                     table_data[col] = [val * conv for val in table_data[col]]
-        if cool_cop != 1:
-            table_data['Cooling'] = [val / cool_cop for val in table_data['Cooling']]
-        if heat_cop != 1:
-            table_data['Heating'] = [val / heat_cop for val in table_data['Heating']]
+
         # add a column for the total data of each room
         totals = [0] * len(table_data['Cooling'])
         for col, dat in table_data.items():
@@ -319,10 +303,6 @@ def display_improved_results(container, sql_results, heat_cop, cool_cop, ip_unit
         # Display the chart using Streamlit
         container.altair_chart(chart, use_container_width=True)
 
-    if st.session_state.sql_baseline:
-        container.write('Appendix G summary ({})'.format(display_units))
-
-        st.session_state.appendix_g_summary =appendix_g_summary(st.session_state.sql_improved, [st.session_state.sql_baseline],st.session_state.climate_zone,building_type=st.session_state.building_type,electricity_cost=st.session_state.electricity_cost, natural_gas_cost=st.session_state.natural_gas_cost)
-        container.json(st.session_state.appendix_g_summary)
-
+    
+    
 

@@ -17,6 +17,29 @@ def clear_temp_folder(full_clean = True):
         st.session_state.valid_report = None
         st.session_state.building_geometry = None
     
+def skylight_inputs(container):
+    ee_skylight_ratio = 0.0
+    ee_skylight_y_dimension = 0.0
+    ee_skylight_operable = False
+    if container.checkbox(label='Skylights', value=False, help = "Creates a skylight only in the rooftop."):
+        ee_skylight_ratio = 0.2
+        ee_skylight_y_dimension = 0.5
+        ee_skylight_operable = False
+    
+        in_skylight_ratio  = container.number_input(
+            label='Ratio', min_value=0.0, max_value=1.0, value=ee_skylight_ratio, step=0.05,  )
+        in_skylight_y_dimension  = container.number_input(
+            label='Dimension', min_value=0.0, max_value=10.0, value=ee_skylight_y_dimension, step=0.05, )
+        in_skylight_operable  = container.checkbox(
+            label='Operable windows', value=ee_skylight_operable)
+        if in_skylight_ratio != st.session_state.skylight_ratio or  in_skylight_y_dimension != st.session_state.skylight_y_dimension or in_skylight_operable != st.session_state.skylight_operable:
+            st.session_state.skylight_ratio = in_skylight_ratio
+            st.session_state.skylight_y_dimension = in_skylight_y_dimension
+            st.session_state.skylight_operable= in_skylight_operable
+    else:
+        st.session_state.skylight_ratio =  0.0
+        st.session_state.skylight_y_dimension =  0.0
+        st.session_state.skylight_operable= False
 
 
 def geometry_parameters(container):
@@ -26,7 +49,7 @@ def geometry_parameters(container):
     no_of_floors_ = container.number_input("Number of floors",min_value=0, max_value=70,value=2,step=1,help="This is the lenght of the building in meters")
     floor_height_ = container.number_input("Building Floor height [m]",min_value=2.0,max_value=10.0,value=2.8,help="This is the height of the building floor in meters")       
     wwr_ =  container.number_input("Window to wall ratio",min_value=0.0,max_value=0.99,value=0.4,help="This is the window to wall ratio for all the rooms")
-   
+    skylight_inputs(container)
 
     lower_left = Point3D(0, 0, 0)
     lower_right = Point3D(width_, 0, 0)
@@ -37,6 +60,7 @@ def geometry_parameters(container):
     st.session_state.no_of_floors = no_of_floors_
     st.session_state.floor_height = floor_height_
     st.session_state.wwr = wwr_
+
 
 
 
@@ -132,11 +156,10 @@ def generate_honeybee_model():
     # Solve adjacency between rooms
     Room.solve_adjacency(st.session_state.hb_model.rooms, 0.01)
 
-    # Add ideal air system
+    # Add ideal air system and skylights
     for room in st.session_state.hb_model.rooms:
         identifier = f"IdealAirSystem-{room.identifier}"
         if not room.properties.energy.hvac:
             room.properties.energy.hvac = IdealAirSystem(identifier)
-
-        # Skylights
-        create_skylights(room, st.session_state.skylight_ratio ,st.session_state.skylight_y_dimension,  operable_=st.session_state.skylight_operable)
+        if st.session_state.skylight_ratio > 0.0:
+            create_skylights(room.faces, st.session_state.skylight_ratio ,st.session_state.skylight_y_dimension,  operable_=st.session_state.skylight_operable)

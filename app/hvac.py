@@ -633,6 +633,7 @@ def get_IdealAirSystem(st, room):
     # Checkbox or selectbox for heating_availability and cooling_availability could be added here
     # if you plan to make them configurable. For simplicity, the example assumes None (default).
 
+    
     return ideal_air_system
 
 def assign_hvac_system(st, room, equipment_type):
@@ -679,6 +680,7 @@ def assign_hvac_system(st, room, equipment_type):
         room.properties.energy.hvac = None
     elif equipment_type == "IdealAirSystem":
         room.properties.energy.hvac = get_IdealAirSystem(st,room)
+        
     
     if room.properties.energy.hvac:
         system_new = room.properties.energy.hvac.to_dict()
@@ -688,6 +690,11 @@ def assign_hvac_system(st, room, equipment_type):
     if system_old != system_new:
         #st.session_state.baseline_sql_results = None
         st.session_state.improved_sql_results = None
+
+    if equipment_type == "IdealAirSystem":
+        st.session_state.ideal_loads = True
+    else:
+        st.session_state.ideal_loads = None
 
 def iterate_rooms_hvac(st):
    

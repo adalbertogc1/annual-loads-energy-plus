@@ -1,20 +1,13 @@
 
 import streamlit as st
-import random
+
 
 from honeybee_energy.lib.programtypes import program_type_by_identifier
 from utils import update_properties_dict, get_vintage_loads, get_building_type
 from honeybee_energy.lib.programtypes import PROGRAM_TYPES
 from honeybee.search import filter_array_by_keywords
 
-'''
-def update_room_program_types(hb_model, vintage, building_type):
-    room_prog = filter_array_by_keywords(PROGRAM_TYPES, [vintage, building_type], False)
-    for room in hb_model.rooms:
-        if 'room_prog' not in room.user_data or room.user_data['room_prog'] not in room_prog:
-            room.user_data['room_prog'] = random.choice(room_prog)
-            room.properties.energy.program_type = program_type_by_identifier(room.user_data['room_prog'])
-'''
+
 
 def iterate_rooms_and_display_properties():
     """Iterates through rooms in a Honeybee model, displaying and allowing the modification of various properties such as lighting, 
@@ -54,7 +47,7 @@ def iterate_rooms_and_display_properties():
             selectbox_key = f"room_prog_{room.identifier}"
             # Determine the current index of the room's program type in the 'room_prog' list to set it as the default selection in the selectbox.
             # If the room's program type identifier is not in 'room_prog', default to the first item (index 0).
-            current_prog_index = room_prog.index(room.properties.energy.program_type.identifier) if room.properties.energy.program_type.identifier in room_prog else room_prog.index(random.choice(room_prog))#0
+            current_prog_index = room_prog.index(room.properties.energy.program_type.identifier) if room.properties.energy.program_type.identifier in room_prog else room_prog.index(room_prog[-1])#.index(random.choice(room_prog))#0
             # Create a selectbox for changing the room's program type, with the current program type pre-selected.
             new_room_prog = st.selectbox("Room Program", room_prog, index=current_prog_index, key=selectbox_key)
             
@@ -63,8 +56,8 @@ def iterate_rooms_and_display_properties():
             if new_room_prog != room.properties.energy.program_type.identifier:
                 new_program_type = program_type_by_identifier(new_room_prog)
                 room.properties.energy.program_type = new_program_type
-                #st.session_state.baseline_sql_results = None
-                #st.session_state.improved_sql_results = None  # reset to have results recomputed
+                st.session_state.baseline_sql_results = None
+                st.session_state.improved_sql_results = None  # reset to have results recomputed
             else:
                 # Duplicate the program type to ensure any modifications are made on a new instance, preserving the original object's state.
                 new_program_type = room.properties.energy.program_type

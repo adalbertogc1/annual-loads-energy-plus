@@ -56,12 +56,9 @@ Feel free to fork, improve, make pull requests or fill issues. I'd love to hear 
 
 MIT License
 
-
 # TODO
 
 Items to be done in the following iterations:
 
-- Allow for one HVAC system for the full building [FOR THE FUTURE] 
-- Remove measures tab
-- Correctly do the baseline sims (4 orientations)
-- Maybe improve output to account for all primary energy end users
+- Allow for one HVAC system for the full building [FOR THE FUTURE]
+- Fix incosistencies when loading HBJSON

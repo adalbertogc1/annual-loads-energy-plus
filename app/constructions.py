@@ -4,7 +4,7 @@ from utils import get_vintage_constructions, get_climate_zone, update_properties
 from honeybee.search import filter_array_by_keywords
 from honeybee_energy.lib.constructionsets import CONSTRUCTION_SETS
 from honeybee_energy.lib.constructionsets import construction_set_by_identifier
-import random
+
 def assign_constructions():
     """Iterates through rooms in a Honeybee model, displaying and allowing the modification of various properties such as lighting, 
     people gains, equipment gains, service hot water, infiltration, ventilation, and setpoints. It requires a valid Honeybee model object 
@@ -38,19 +38,20 @@ def assign_constructions():
             current_construction_set_index = room_construction_set.index(room.properties.energy.construction_set.identifier) if room.properties.energy.construction_set.identifier in room_construction_set else room_construction_set.index(filter_array_by_keywords(room_construction_set, ["Mass"])[0])#0
             # Create a selectbox for changing the room's program type, with the current program type pre-selected.
             new_construction_set = st.selectbox("Construction set", room_construction_set, index=current_construction_set_index, key=selectbox_key)
-            
+            new_construction_set = construction_set_by_identifier(new_construction_set)
             # Check if the user has selected a different program type from the dropdown.
+            """
             # If so, update the room's program type to the new selection. Otherwise, keep it unchanged.
             if new_construction_set != room.properties.energy.construction_set.identifier:
                 new_construction_set = construction_set_by_identifier(new_construction_set)
                 room.properties.energy.construction_set = new_construction_set
                 #st.session_state.baseline_sql_results = None
-                st.session_state.improved_sql_results = None
+                #st.session_state.improved_sql_results = None
             else:
                 # Duplicate the program type to ensure any modifications are made on a new instance, preserving the original object's state.
-                new_construction_set = room.properties.energy.construction_set
-            
-            new_construction_set = room.properties.energy.construction_set.duplicate()
+                #new_construction_set = room.properties.energy.construction_set
+                new_construction_set = room.properties.energy.construction_set.duplicate()
+            """
             
             # Check if the new program type has a lighting object associated with it.
             if new_construction_set.wall_set:
@@ -118,4 +119,4 @@ def assign_constructions():
             if room.properties.energy.construction_set != new_construction_set:
                 room.properties.energy.construction_set = new_construction_set
                 #st.session_state.baseline_sql_results = None
-                #st.session_state.improved_sql_results = None
+                st.session_state.improved_sql_results = None

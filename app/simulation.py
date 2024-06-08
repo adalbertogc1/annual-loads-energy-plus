@@ -10,7 +10,6 @@ from ladybug.analysisperiod import AnalysisPeriod
 from ladybug.datatype.energyintensity import EnergyIntensity
 from ladybug.color import Color
 from honeybee.units import conversion_factor_to_meters
-from honeybee_energy.baseline.create import model_to_baseline
 from honeybee_energy.result.loadbalance import LoadBalance
 from honeybee_energy.simulation.parameter import SimulationParameter
 from honeybee_energy.result.err import Err
@@ -253,7 +252,7 @@ def simulation_job(sim_par, hb_model, target_folder,user_id, epw_path,sim_type, 
     return sql
 
 
-def run_baseline_simulation(container,target_folder, user_id, hb_model, epw_path, ddy_path):
+def run_baseline_simulation(container,target_folder, user_id, hb_model, epw_path, ddy_path, north):
     """Build the IDF file from a Model and run it through EnergyPlus.
 
     Args:
@@ -266,29 +265,31 @@ def run_baseline_simulation(container,target_folder, user_id, hb_model, epw_path
         north: Integer for the angle from the Y-axis where North is.
     """
     # check to be sure there is a model
-    if not hb_model or not epw_path or not ddy_path:# or \
-            #st.session_state.baseline_sql_results is not None:
+    if not hb_model or not epw_path or not ddy_path:
         return
 
-    #st.session_state.hb_model_baseline = hb_model.duplicate()
 
     baseline_button_holder = container.empty()
+    warning_message_holder = container.empty()
     if baseline_button_holder.button('Run Baseline Simulation'):
         # check to be sure that the Model has Rooms
         assert len(hb_model.rooms) != 0, \
             'Model has no Rooms and cannot be simulated in EnergyPlus.'
+        
+        warning_message_holder.info( "INFO: Simulating four orientations to calculate baseline.")
 
-        # Convert to baseline if required:
-        model_to_baseline(hb_model,st.session_state.climate_zone, building_type=st.session_state.building_type, lighting_by_building= st.session_state.lighting_by_building)
 
         # create simulation parameters for the coarsest/fastest E+ sim possible
         sim_par = get_simulation_parameters(ddy_path)
+            
+        st.session_state.sql_baseline = []
+        for rotation in [270.0,180.0,90.0,0.0]:
+            sql_baseline =simulation_job(sim_par, hb_model, target_folder,user_id, epw_path,f"baseline_{int(rotation)}", north+rotation)
+            st.session_state.sql_baseline.append(sql_baseline)
 
-        st.session_state.sql_baseline  =  simulation_job(sim_par, hb_model, target_folder,user_id, epw_path,"baseline")
-        
-        if st.session_state.sql_baseline  is not None and os.path.isfile(st.session_state.sql_baseline ):
-            st.session_state.baseline_sql_results = load_sql_data(st.session_state.sql_baseline , hb_model)
-            #baseline_button_holder.write('')
+        if sql_baseline  is not None and os.path.isfile(sql_baseline ):
+            st.session_state.baseline_sql_results = load_sql_data(sql_baseline , hb_model)
+        warning_message_holder.write('')
 
 
 def run_improved_simulation(container, target_folder, user_id, hb_model, epw_path, ddy_path, north):
@@ -304,15 +305,15 @@ def run_improved_simulation(container, target_folder, user_id, hb_model, epw_pat
         north: Integer for the angle from the Y-axis where North is.
     """
     # check to be sure there is a model
-    if not hb_model or not epw_path or not ddy_path:# or \
-            #st.session_state.improved_sql_results is not None:
+    if not hb_model or not epw_path or not ddy_path:
         return
     
 
     improved_button_holder = container.empty()
+    warning_message_holder = container.empty()
     if improved_button_holder.button('Run Improved Simulation'):
-        #  if st.session_state.sql_baseline:
-        
+        if st.session_state.ideal_loads:
+            warning_message_holder.info( "INFO: Improved case is being modelled with ideal loads in at least one room.")
         # check to be sure that the Model has Rooms
         assert len(hb_model.rooms) != 0, \
             'Model has no Rooms and cannot be simulated in EnergyPlus.'
@@ -323,7 +324,7 @@ def run_improved_simulation(container, target_folder, user_id, hb_model, epw_pat
         
         if st.session_state.sql_improved is not None and os.path.isfile(st.session_state.sql_improved):
             st.session_state.improved_sql_results = load_sql_data(st.session_state.sql_improved, hb_model)
-            #improved_button_holder.write('')
+            warning_message_holder.write('')
 
 
 
