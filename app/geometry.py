@@ -5,7 +5,7 @@ import tempfile
 from pathlib import Path
 from honeybee_energy.hvac.idealair import IdealAirSystem
 from honeybee.boundarycondition import Outdoors
-from honeybee.facetype import RoofCeiling
+from honeybee.facetype import RoofCeiling, Wall
 from honeybee.room import Room
 from honeybee.face import Face
 
@@ -31,7 +31,7 @@ def skylight_inputs(container):
         in_skylight_y_dimension  = container.number_input(
             label='Dimension', min_value=0.0, max_value=10.0, value=ee_skylight_y_dimension, step=0.05, )
         in_skylight_operable  = container.checkbox(
-            label='Operable windows', value=ee_skylight_operable)
+            label='Operable skylight', value=ee_skylight_operable)
         if in_skylight_ratio != st.session_state.skylight_ratio or  in_skylight_y_dimension != st.session_state.skylight_y_dimension or in_skylight_operable != st.session_state.skylight_operable:
             st.session_state.skylight_ratio = in_skylight_ratio
             st.session_state.skylight_y_dimension = in_skylight_y_dimension
@@ -49,6 +49,8 @@ def geometry_parameters(container):
     no_of_floors_ = container.number_input("Number of floors",min_value=0, max_value=70,value=2,step=1,help="This is the lenght of the building in meters")
     floor_height_ = container.number_input("Building Floor height [m]",min_value=2.0,max_value=10.0,value=2.8,help="This is the height of the building floor in meters")       
     wwr_ =  container.number_input("Window to wall ratio",min_value=0.0,max_value=0.99,value=0.4,help="This is the window to wall ratio for all the rooms")
+    #in_window_operable  = container.checkbox(label='Operable windows', value=False)
+
     skylight_inputs(container)
 
     lower_left = Point3D(0, 0, 0)
@@ -60,6 +62,7 @@ def geometry_parameters(container):
     st.session_state.no_of_floors = no_of_floors_
     st.session_state.floor_height = floor_height_
     st.session_state.wwr = wwr_
+    #st.session_state.window_operable = in_window_operable
 
 
 
@@ -103,6 +106,9 @@ def can_host_apeture(face):
     return isinstance(face.boundary_condition, Outdoors) and \
         isinstance(face.type, RoofCeiling)
 
+def can_host_apeture_non_roof(face):
+    """Test if a face is intended to host apertures (according to this component)."""
+    return isinstance(face.boundary_condition, Outdoors) and  isinstance(face.type, Wall)
 
 def assign_apertures(face, rat, xd, yd, op):
     """Assign apertures to a Face based on a set of inputs."""
@@ -114,7 +120,6 @@ def assign_apertures(face, rat, xd, yd, op):
             ap.is_operable = op
 
 # add skylights
-
 def create_skylights(_hb_objs, _ratio,_y_dim_, _x_dim_=None, operable_ = False):
     # duplicate the initial objects
     #hb_objs = [obj.duplicate() for obj in _hb_objs]
@@ -137,6 +142,22 @@ def create_skylights(_hb_objs, _ratio,_y_dim_, _x_dim_=None, operable_ = False):
         else:
             raise TypeError(
                 'Input _hb_objs must be a Room or Face. Not {}.'.format(type(obj)))
+
+def make_windows_operable(_hb_objs, operable_ = True):
+    for obj in _hb_objs:
+        if isinstance(obj, Room):
+            for face in obj.faces:
+                if can_host_apeture_non_roof(face):
+                    for ap in obj.apertures:
+                        ap.is_operable = operable_
+        elif isinstance(obj, Face):
+            if can_host_apeture_non_roof(obj):
+                for ap in obj.apertures:
+                    ap.is_operable = operable_
+        else:
+            raise TypeError(
+                'Input _hb_objs must be a Room or Face. Not {}.'.format(type(obj)))
+
 
 
 def generate_honeybee_model():
@@ -163,3 +184,5 @@ def generate_honeybee_model():
             room.properties.energy.hvac = IdealAirSystem(identifier)
         if st.session_state.skylight_ratio > 0.0:
             create_skylights(room.faces, st.session_state.skylight_ratio ,st.session_state.skylight_y_dimension,  operable_=st.session_state.skylight_operable)
+        if st.session_state.window_operable:
+            make_windows_operable(room.faces)

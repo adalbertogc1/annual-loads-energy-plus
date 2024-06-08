@@ -63,6 +63,8 @@ def initialize():
         st.session_state.floor_height = None      
     if "wwr" not in st.session_state: 
         st.session_state.wwr = None
+    if "window_operable" not in st.session_state:   
+        st.session_state.window_operable = None
     if "building_geometry" not in st.session_state: 
         st.session_state.building_geometry = None  
     if 'skylight_ratio' not in st.session_state:
