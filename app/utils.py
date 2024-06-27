@@ -199,7 +199,7 @@ def get_vintage_constructions(container,key_="constructions"):
         st.session_state.vintage_constructions = in_vintage
 
 
-def get_building_code(container,key_="building_code"):
+def get_building_code1(container,key_="building_code"):
     help = "Select the ASHRAE 90.1 version."
     # Similarly, create another dropdown menu for selecting a building type.
     # 'BUILDING_TYPES' is a list of different types of buildings. The user's selection is stored in 'st.session_state.building_type'.
@@ -215,6 +215,32 @@ def get_building_code(container,key_="building_code"):
         st.session_state.vintage_hvac = find_partial_matches(vintage_hvac_list, in_building_code)[-1]
         #TODO fix the logic so if a vintage exists it does not change the current model
         #TODO check the need to select the same code 2x for change it on the app
+
+def update_building_code():
+    vintage_hvac_list = list(VINTAGE_HVAC_OPTIONS)
+    in_building_code = st.session_state.building_code_selection
+    if in_building_code != st.session_state.vintage_loads:
+        st.session_state.vintage_loads = in_building_code
+        st.session_state.vintage_constructions = in_building_code
+        st.session_state.vintage_hvac = find_partial_matches(vintage_hvac_list, in_building_code)[-1]
+
+def get_building_code(container, key_="building_code"):
+    help = "Select the ASHRAE 90.1 version."
+    standards_registry_list = list(STANDARDS_REGISTRY)
+
+    if st.session_state.vintage_loads:
+        default_value = st.session_state.vintage_loads
+    else:
+        default_value = standards_registry_list[6]  # Default to the seventh item if not set
+
+    container.selectbox(
+        'Building Code:', 
+        standards_registry_list, 
+        index=standards_registry_list.index(default_value),
+        key="building_code_selection",
+        on_change=update_building_code,
+        help=help
+    )
 
 
 def get_building_type(container,key_="loads"):
