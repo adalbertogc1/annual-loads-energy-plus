@@ -8,6 +8,7 @@ from honeybee.boundarycondition import Outdoors
 from honeybee.facetype import RoofCeiling, Wall
 from honeybee.room import Room
 from honeybee.face import Face
+from utils import get_climate_zone,get_building_type,get_building_code
 
 def clear_temp_folder(full_clean = True):
     st.session_state.temp_folder = Path(tempfile.mkdtemp())
@@ -43,6 +44,11 @@ def skylight_inputs(container):
 
 
 def geometry_parameters(container):
+
+    get_building_code(container) 
+    get_climate_zone(container) 
+    get_building_type(container)
+
     #col1, col2 = container.columns(2)
     width_ = container.number_input("Building Width [m]",min_value=0.0,max_value=50.0,value=10.0,help="This is the width of the building in meters")
     lenght_ = container.number_input("Building Lenght [m]",min_value=0.0,max_value=50.0,value=20.0,help="This is the lenght of the building in meters")        

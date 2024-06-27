@@ -13,6 +13,13 @@ from honeybee_energy.lib.programtypes import BUILDING_TYPES
 from honeybee.search import filter_array_by_keywords
 
 CLIMATE_ZONES = ('0A', '1A', '2A', '3A', '4A', '5A', '6A', '0B', '1B', '2B', '3B', '4B', '5B', '6B', '3C', '4C', '5C', '7', '8')
+VINTAGE_HVAC_OPTIONS = ('DOE_Ref_Pre_1980', 'DOE_Ref_1980_2004', 'ASHRAE_2004', 'ASHRAE_2007', 'ASHRAE_2010', 'ASHRAE_2013', 'ASHRAE_2016', 'ASHRAE_2019')
+
+def find_partial_matches(data_list, keyword):
+    # Convert keyword to lowercase to make the search case-insensitive
+    keyword_lower = keyword.lower()
+    # This function returns all elements containing the keyword as a substring, regardless of case
+    return [item for item in data_list if keyword_lower in item.lower()]
 
 def download_file_by_name(url, target_folder, file_name, mkdir=False):
     """Download a file to a directory.
@@ -169,52 +176,82 @@ def update_properties_dict(room, properties_dict, property_name, parent_key=''):
 
 
 
-def get_vintage_loads():
-    key_ = "loads" 
-    skip =["pre_1980"]
+def get_vintage_loads(container,key_ = "loads"):
+     
     # Use Streamlit's 'selectbox' to create a dropdown menu for selecting a construction period.
     # 'STANDARDS_REGISTRY' is a list containing different construction periods. The user's selection is stored in vintage.
     # The '6' at the end specifies the default selection index from the 'STANDARDS_REGISTRY' list, making the seventh item the default choice.
     standards_registry_list = list(STANDARDS_REGISTRY)
-    standards_registry_list = [x for x in standards_registry_list if x not in skip]
-    in_vintage = st.selectbox('Loads year:', standards_registry_list, standards_registry_list.index(st.session_state.vintage_loads)if st.session_state.vintage_loads else standards_registry_list.index(filter_array_by_keywords(standards_registry_list, ["2016"])[0]), key = f"construction_period_{key_}")
+    #standards_registry_list = [x for x in standards_registry_list if x not in skip]
+    in_vintage = container.selectbox('Loads year:', standards_registry_list, standards_registry_list.index(st.session_state.vintage_loads)if st.session_state.vintage_loads else standards_registry_list.index(filter_array_by_keywords(standards_registry_list, ["2016"])[0]), key = f"construction_period_{key_}")
     if in_vintage != st.session_state.vintage_loads:
         st.session_state.vintage_loads = in_vintage
-        #st.session_state.baseline_sql_results = None
-        #st.session_state.improved_sql_results = None
 
-def get_vintage_constructions():
-    key_="constructions"
+
+def get_vintage_constructions(container,key_="constructions"):
+    
     # Use Streamlit's 'selectbox' to create a dropdown menu for selecting a construction period.
     # 'STANDARDS_REGISTRY' is a list containing different construction periods. The user's selection is stored in vintage.
     # The '6' at the end specifies the default selection index from the 'STANDARDS_REGISTRY' list, making the seventh item the default choice.
     standards_registry_list = list(STANDARDS_REGISTRY)
-    in_vintage = st.selectbox('Construction Period:', standards_registry_list, standards_registry_list.index(st.session_state.vintage_constructions)if st.session_state.vintage_constructions else standards_registry_list.index(filter_array_by_keywords(standards_registry_list, ["1980_2004"])[0]), key = f"construction_period_{key_}")
+    in_vintage = container.selectbox('Construction Period:', standards_registry_list, standards_registry_list.index(st.session_state.vintage_constructions)if st.session_state.vintage_constructions else standards_registry_list.index(filter_array_by_keywords(standards_registry_list, ["1980_2004"])[0]), key = f"construction_period_{key_}")
     if in_vintage != st.session_state.vintage_constructions:
         st.session_state.vintage_constructions = in_vintage
-        #st.session_state.baseline_sql_results = None
-        #st.session_state.improved_sql_results = None
 
-def get_building_type(key_):
+
+def get_building_code(container,key_="building_code"):
+    help = "Select the ASHRAE 90.1 version."
+    # Similarly, create another dropdown menu for selecting a building type.
+    # 'BUILDING_TYPES' is a list of different types of buildings. The user's selection is stored in 'st.session_state.building_type'.
+    # Again, '6' is the default selection index, making the seventh item in the 'BUILDING_TYPES' list the default choice.
+    vintage_hvac_list = list(VINTAGE_HVAC_OPTIONS)
+    standards_registry_list = list(STANDARDS_REGISTRY)
+    
+    in_building_code= container.selectbox('Building Code:', standards_registry_list, standards_registry_list.index(st.session_state.vintage_loads)if st.session_state.vintage_loads else 6, key = f"building_code_{key_}",help=help)
+    
+    if in_building_code != st.session_state.vintage_loads:
+        st.session_state.vintage_loads = in_building_code
+        st.session_state.vintage_constructions = in_building_code
+        st.session_state.vintage_hvac = find_partial_matches(vintage_hvac_list, in_building_code)[-1]
+        #TODO fix the logic so if a vintage exists it does not change the current model
+        #TODO check the need to select the same code 2x for change it on the app
+
+
+def get_building_type(container,key_="loads"):
 
     # Similarly, create another dropdown menu for selecting a building type.
     # 'BUILDING_TYPES' is a list of different types of buildings. The user's selection is stored in 'st.session_state.building_type'.
     # Again, '6' is the default selection index, making the seventh item in the 'BUILDING_TYPES' list the default choice.
     building_types_list = list(BUILDING_TYPES)
-    in_building_type= st.selectbox('Building Type:', building_types_list, building_types_list.index(st.session_state.building_type)if st.session_state.building_type else 6, key = f"building_type_{key_}")
+    in_building_type= container.selectbox('Building Type:', building_types_list, building_types_list.index(st.session_state.building_type)if st.session_state.building_type else 6, key = f"building_type_{key_}")
     if in_building_type != st.session_state.building_type:
         st.session_state.building_type = in_building_type
         #st.session_state.baseline_sql_results = None
         #st.session_state.improved_sql_results = None
 
-def get_climate_zone(key_):
+
+
+
+def get_climate_zone_bkp(container,key_="construction"):
 
     # Similarly, create another dropdown menu for selecting a building type.
     # 'BUILDING_TYPES' is a list of different types of buildings. The user's selection is stored in 'st.session_state.building_type'.
     # Again, '6' is the default selection index, making the seventh item in the 'BUILDING_TYPES' list the default choice.
     climate_zones_list = list(CLIMATE_ZONES)
-    in_climate_zone= st.selectbox('Climate Zone:', climate_zones_list, climate_zones_list.index(st.session_state.climate_zone)if st.session_state.climate_zone else 4, key = f"climate_zone_{key_}")
+    in_climate_zone= container.selectbox('Climate Zone:', climate_zones_list, climate_zones_list.index(st.session_state.climate_zone)if st.session_state.climate_zone else 4, key = f"climate_zone_{key_}")
     if in_climate_zone != st.session_state.climate_zone:
         st.session_state.climate_zone = in_climate_zone
+        #st.session_state.baseline_sql_results = None
+        #st.session_state.improved_sql_results = None
+
+def get_climate_zone(container,key_="construction"):
+
+    # Similarly, create another dropdown menu for selecting a building type.
+    # 'BUILDING_TYPES' is a list of different types of buildings. The user's selection is stored in 'st.session_state.building_type'.
+    # Again, '6' is the default selection index, making the seventh item in the 'BUILDING_TYPES' list the default choice.
+    #climate_zones_list = list(CLIMATE_ZONES)
+    #in_climate_zone= container.selectbox('Climate Zone:', climate_zones_list, climate_zones_list.index(st.session_state.climate_zone)if st.session_state.climate_zone else 4, key = f"climate_zone_{key_}")
+    if not st.session_state.climate_zone:
+        st.session_state.climate_zone = '4A'
         #st.session_state.baseline_sql_results = None
         #st.session_state.improved_sql_results = None

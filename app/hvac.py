@@ -1,6 +1,7 @@
 from honeybee_energy.altnumber import Autosize
 from honeybee.altnumber import NoLimit
 import copy
+from utils import VINTAGE_HVAC_OPTIONS
 
 ROOM_EQUIPMENT= ("ForcedAirFurnace","PSZ","PTAC","PVAV","VAV","FCUwithDOAS","RadiantwithDOAS","VRFwithDOAS","WSHPwithDOAS","Baseboard","EvaporativeCooler",
             "FCU","GasUnitHeater","Radiant","Residential","VRF","WindowAC","WSHP", 'IdealAirSystem', "Not Conditioned")
@@ -10,11 +11,10 @@ def get_ForcedAirFurnace(st, room):
 
     # Instantiate the ForcedAirFurnace system with a unique identifier
     identifier = f"ForcedAirFurnace-{room.identifier}"
-    standard_system = ForcedAirFurnace(identifier)
+    standard_system = ForcedAirFurnace(identifier,vintage=st.session_state.vintage_hvac)
 
     # Selectbox for vintage
-    vintage_options = ['DOE_Ref_Pre_1980', 'DOE_Ref_1980_2004', 'ASHRAE_2004', 'ASHRAE_2007', 'ASHRAE_2010', 'ASHRAE_2013', 'ASHRAE_2016', 'ASHRAE_2019']
-    vintage = st.selectbox("Vintage", options=vintage_options, index=vintage_options.index(standard_system.vintage), key=f"vintage-{room.identifier}")
+    vintage = st.selectbox("Vintage", options=VINTAGE_HVAC_OPTIONS, index=VINTAGE_HVAC_OPTIONS.index(standard_system.vintage), key=f"vintage-{room.identifier}")
     standard_system.vintage = vintage
 
     # Selectbox for equipment_type
@@ -45,11 +45,10 @@ def get_PSZSystem(st, room):
     from honeybee_energy.hvac.allair.psz import PSZ
     # Instantiate the PSZ system with a unique identifier
     identifier = f"PSZ-{room.identifier}"
-    psz_system = PSZ(identifier)
+    psz_system = PSZ(identifier,vintage=st.session_state.vintage_hvac)
 
     # Selectbox for vintage
-    vintage_options = ['DOE_Ref_Pre_1980', 'DOE_Ref_1980_2004', 'ASHRAE_2004', 'ASHRAE_2007', 'ASHRAE_2010', 'ASHRAE_2013', 'ASHRAE_2016', 'ASHRAE_2019']
-    vintage = st.selectbox("Vintage", options=vintage_options, index=vintage_options.index(psz_system.vintage), key=f"vintage-{room.identifier}")
+    vintage = st.selectbox("Vintage", options=VINTAGE_HVAC_OPTIONS, index=VINTAGE_HVAC_OPTIONS.index(psz_system.vintage), key=f"vintage-{room.identifier}")
     psz_system.vintage = vintage
 
     # Selectbox for equipment_type
@@ -80,11 +79,10 @@ def get_PTACSystem(st, room):
     from honeybee_energy.hvac.allair.ptac import PTAC
     # Instantiate the PTAC system with a unique identifier
     identifier = f"PTAC-{room.identifier}"
-    ptac_system = PTAC(identifier)
+    ptac_system = PTAC(identifier,vintage=st.session_state.vintage_hvac)
 
     # Selectbox for vintage
-    vintage_options = ['DOE_Ref_Pre_1980', 'DOE_Ref_1980_2004', 'ASHRAE_2004', 'ASHRAE_2007', 'ASHRAE_2010', 'ASHRAE_2013', 'ASHRAE_2016', 'ASHRAE_2019']
-    vintage = st.selectbox("Vintage", options=vintage_options, index=vintage_options.index(ptac_system.vintage), key=f"vintage-{room.identifier}")
+    vintage = st.selectbox("Vintage", options=VINTAGE_HVAC_OPTIONS, index=VINTAGE_HVAC_OPTIONS.index(ptac_system.vintage), key=f"vintage-{room.identifier}")
     ptac_system.vintage = vintage
 
     # Selectbox for equipment_type
@@ -99,11 +97,10 @@ def get_PVAVSystem(st, room):
 
     # Instantiate the PVAV system with a unique identifier
     identifier = f"PVAV-{room.identifier}"
-    pvav_system = PVAV(identifier)
+    pvav_system = PVAV(identifier,vintage=st.session_state.vintage_hvac)
 
     # Selectbox for vintage
-    vintage_options = ['DOE_Ref_Pre_1980', 'DOE_Ref_1980_2004', 'ASHRAE_2004', 'ASHRAE_2007', 'ASHRAE_2010', 'ASHRAE_2013', 'ASHRAE_2016', 'ASHRAE_2019']
-    vintage = st.selectbox("Vintage", options=vintage_options, index=vintage_options.index(pvav_system.vintage), key=f"vintage-{room.identifier}")
+    vintage = st.selectbox("Vintage", options=VINTAGE_HVAC_OPTIONS, index=VINTAGE_HVAC_OPTIONS.index(pvav_system.vintage), key=f"vintage-{room.identifier}")
     pvav_system.vintage = vintage
 
     # Selectbox for equipment_type
@@ -135,11 +132,10 @@ def get_VAVSystem(st, room):
 
     # Instantiate the VAV system with a unique identifier
     identifier = f"VAV-{room.identifier}"
-    vav_system = VAV(identifier)
+    vav_system = VAV(identifier,vintage=st.session_state.vintage_hvac)
 
     # Selectbox for vintage
-    vintage_options = ['DOE_Ref_Pre_1980', 'DOE_Ref_1980_2004', 'ASHRAE_2004', 'ASHRAE_2007', 'ASHRAE_2010', 'ASHRAE_2013', 'ASHRAE_2016', 'ASHRAE_2019']
-    vintage = st.selectbox("Vintage", options=vintage_options, index=vintage_options.index(vav_system.vintage), key=f"vintage-{room.identifier}")
+    vintage = st.selectbox("Vintage", options=VINTAGE_HVAC_OPTIONS, index=VINTAGE_HVAC_OPTIONS.index(vav_system.vintage), key=f"vintage-{room.identifier}")
     vav_system.vintage = vintage
 
     # Selectbox for equipment_type
@@ -171,11 +167,10 @@ def get_FCUwithDOASSystem(st, room):
 
     # Instantiate the FCUwithDOAS system with a unique identifier
     identifier = f"FCUwithDOAS-{room.identifier}"
-    fcuwithdoas_system = FCUwithDOAS(identifier)
+    fcuwithdoas_system = FCUwithDOAS(identifier,vintage=st.session_state.vintage_hvac)
 
     # Selectbox for vintage
-    vintage_options = ['DOE_Ref_Pre_1980', 'DOE_Ref_1980_2004', 'ASHRAE_2004', 'ASHRAE_2007', 'ASHRAE_2010', 'ASHRAE_2013', 'ASHRAE_2016', 'ASHRAE_2019']
-    vintage = st.selectbox("Vintage", options=vintage_options, index=vintage_options.index(fcuwithdoas_system.vintage), key=f"vintage-{room.identifier}")
+    vintage = st.selectbox("Vintage", options=VINTAGE_HVAC_OPTIONS, index=VINTAGE_HVAC_OPTIONS.index(fcuwithdoas_system.vintage), key=f"vintage-{room.identifier}")
     fcuwithdoas_system.vintage = vintage
 
     # Selectbox for equipment_type
@@ -215,11 +210,10 @@ def get_VRFwithDOASSystem(st, room):
 
     # Instantiate the VRFwithDOAS system with a unique identifier
     identifier = f"VRFwithDOAS-{room.identifier}"
-    vrfwithdoas_system = VRFwithDOAS(identifier)
+    vrfwithdoas_system = VRFwithDOAS(identifier,vintage=st.session_state.vintage_hvac)
 
     # Selectbox for vintage
-    vintage_options = ['DOE_Ref_Pre_1980', 'DOE_Ref_1980_2004', 'ASHRAE_2004', 'ASHRAE_2007', 'ASHRAE_2010', 'ASHRAE_2013', 'ASHRAE_2016', 'ASHRAE_2019']
-    vintage = st.selectbox("Vintage", options=vintage_options, index=vintage_options.index(vrfwithdoas_system.vintage), key=f"vintage-{room.identifier}")
+    vintage = st.selectbox("Vintage", options=VINTAGE_HVAC_OPTIONS, index=VINTAGE_HVAC_OPTIONS.index(vrfwithdoas_system.vintage), key=f"vintage-{room.identifier}")
     vrfwithdoas_system.vintage = vintage
 
     # Equipment type for VRF with DOAS is not selectable as there is only one option provided in the parameters.
@@ -253,11 +247,10 @@ def get_RadiantwithDOASSystem(st, room):
 
     # Instantiate the RadiantwithDOAS system with a unique identifier
     identifier = f"RadiantwithDOAS-{room.identifier}"
-    radiantwithdoas_system = RadiantwithDOAS(identifier)
+    radiantwithdoas_system = RadiantwithDOAS(identifier,vintage=st.session_state.vintage_hvac)
 
     # Selectbox for vintage
-    vintage_options = ['DOE_Ref_Pre_1980', 'DOE_Ref_1980_2004', 'ASHRAE_2004', 'ASHRAE_2007', 'ASHRAE_2010', 'ASHRAE_2013', 'ASHRAE_2016', 'ASHRAE_2019']
-    vintage = st.selectbox("Vintage", options=vintage_options, index=vintage_options.index(radiantwithdoas_system.vintage), key=f"vintage-{room.identifier}")
+    vintage = st.selectbox("Vintage", options=VINTAGE_HVAC_OPTIONS, index=VINTAGE_HVAC_OPTIONS.index(radiantwithdoas_system.vintage), key=f"vintage-{room.identifier}")
     radiantwithdoas_system.vintage = vintage
 
     # Selectbox for equipment_type
@@ -305,11 +298,10 @@ def get_WSHPwithDOASSystem(st, room):
 
     # Instantiate the WSHPwithDOAS system with a unique identifier
     identifier = f"WSHPwithDOAS-{room.identifier}"
-    wshpwithdoas_system = WSHPwithDOAS(identifier)
+    wshpwithdoas_system = WSHPwithDOAS(identifier,vintage=st.session_state.vintage_hvac)
 
     # Selectbox for vintage
-    vintage_options = ['DOE_Ref_Pre_1980', 'DOE_Ref_1980_2004', 'ASHRAE_2004', 'ASHRAE_2007', 'ASHRAE_2010', 'ASHRAE_2013', 'ASHRAE_2016', 'ASHRAE_2019']
-    vintage = st.selectbox("Vintage", options=vintage_options, index=vintage_options.index(wshpwithdoas_system.vintage), key=f"vintage-{room.identifier}")
+    vintage = st.selectbox("Vintage", options=VINTAGE_HVAC_OPTIONS, index=VINTAGE_HVAC_OPTIONS.index(wshpwithdoas_system.vintage), key=f"vintage-{room.identifier}")
     wshpwithdoas_system.vintage = vintage
 
     # Selectbox for equipment_type
@@ -342,11 +334,10 @@ def get_BaseboardSystem(st, room):
 
     # Instantiate the Baseboard system with a unique identifier
     identifier = f"Baseboard-{room.identifier}"
-    baseboard_system = Baseboard(identifier)
+    baseboard_system = Baseboard(identifier,vintage=st.session_state.vintage_hvac)
 
     # Selectbox for vintage
-    vintage_options = ['DOE_Ref_Pre_1980', 'DOE_Ref_1980_2004', 'ASHRAE_2004', 'ASHRAE_2007', 'ASHRAE_2010', 'ASHRAE_2013', 'ASHRAE_2016', 'ASHRAE_2019']
-    vintage = st.selectbox("Vintage", options=vintage_options, index=vintage_options.index(baseboard_system.vintage), key=f"vintage-{room.identifier}")
+    vintage = st.selectbox("Vintage", options=VINTAGE_HVAC_OPTIONS, index=VINTAGE_HVAC_OPTIONS.index(baseboard_system.vintage), key=f"vintage-{room.identifier}")
     baseboard_system.vintage = vintage
 
     # Selectbox for equipment_type
@@ -361,11 +352,10 @@ def get_EvaporativeCoolerSystem(st, room):
 
     # Instantiate the EvaporativeCooler system with a unique identifier
     identifier = f"EvaporativeCooler-{room.identifier}"
-    evaporative_cooler_system = EvaporativeCooler(identifier)
+    evaporative_cooler_system = EvaporativeCooler(identifier,vintage=st.session_state.vintage_hvac)
 
     # Selectbox for vintage
-    vintage_options = ['DOE_Ref_Pre_1980', 'DOE_Ref_1980_2004', 'ASHRAE_2004', 'ASHRAE_2007', 'ASHRAE_2010', 'ASHRAE_2013', 'ASHRAE_2016', 'ASHRAE_2019']
-    vintage = st.selectbox("Vintage", options=vintage_options, index=vintage_options.index(evaporative_cooler_system.vintage), key=f"vintage-{room.identifier}")
+    vintage = st.selectbox("Vintage", options=VINTAGE_HVAC_OPTIONS, index=VINTAGE_HVAC_OPTIONS.index(evaporative_cooler_system.vintage), key=f"vintage-{room.identifier}")
     evaporative_cooler_system.vintage = vintage
 
     # Selectbox for equipment_type
@@ -383,11 +373,10 @@ def get_FCUSystem(st, room):
 
     # Instantiate the FCU system with a unique identifier
     identifier = f"FCU-{room.identifier}"
-    fcu_system = FCU(identifier)
+    fcu_system = FCU(identifier,vintage=st.session_state.vintage_hvac)
 
     # Selectbox for vintage
-    vintage_options = ['DOE_Ref_Pre_1980', 'DOE_Ref_1980_2004', 'ASHRAE_2004', 'ASHRAE_2007', 'ASHRAE_2010', 'ASHRAE_2013', 'ASHRAE_2016', 'ASHRAE_2019']
-    vintage = st.selectbox("Vintage", options=vintage_options, index=vintage_options.index(fcu_system.vintage), key=f"vintage-{room.identifier}")
+    vintage = st.selectbox("Vintage", options=VINTAGE_HVAC_OPTIONS, index=VINTAGE_HVAC_OPTIONS.index(fcu_system.vintage), key=f"vintage-{room.identifier}")
     fcu_system.vintage = vintage
 
     # Selectbox for equipment_type
@@ -408,11 +397,10 @@ def get_GasUnitHeaterSystem(st, room):
 
     # Instantiate the GasUnitHeater system with a unique identifier
     identifier = f"GasUnitHeater-{room.identifier}"
-    gas_unit_heater_system = GasUnitHeater(identifier)
+    gas_unit_heater_system = GasUnitHeater(identifier,vintage=st.session_state.vintage_hvac)
 
     # Selectbox for vintage
-    vintage_options = ['DOE_Ref_Pre_1980', 'DOE_Ref_1980_2004', 'ASHRAE_2004', 'ASHRAE_2007', 'ASHRAE_2010', 'ASHRAE_2013', 'ASHRAE_2016', 'ASHRAE_2019']
-    vintage = st.selectbox("Vintage", options=vintage_options, index=vintage_options.index(gas_unit_heater_system.vintage), key=f"vintage-{room.identifier}")
+    vintage = st.selectbox("Vintage", options=VINTAGE_HVAC_OPTIONS, index=VINTAGE_HVAC_OPTIONS.index(gas_unit_heater_system.vintage), key=f"vintage-{room.identifier}")
     gas_unit_heater_system.vintage = vintage
 
     # The Gas Unit Heater system has a single equipment type option 'GasHeaters'.
@@ -429,11 +417,10 @@ def get_RadiantSystem(st, room):
 
     # Instantiate the Radiant system with a unique identifier
     identifier = f"Radiant-{room.identifier}"
-    radiant_system = Radiant(identifier)
+    radiant_system = Radiant(identifier,vintage=st.session_state.vintage_hvac)
 
     # Selectbox for vintage
-    vintage_options = ['DOE_Ref_Pre_1980', 'DOE_Ref_1980_2004', 'ASHRAE_2004', 'ASHRAE_2007', 'ASHRAE_2010', 'ASHRAE_2013', 'ASHRAE_2016', 'ASHRAE_2019']
-    vintage = st.selectbox("Vintage", options=vintage_options, index=vintage_options.index(radiant_system.vintage), key=f"vintage-{room.identifier}")
+    vintage = st.selectbox("Vintage", options=VINTAGE_HVAC_OPTIONS, index=VINTAGE_HVAC_OPTIONS.index(radiant_system.vintage), key=f"vintage-{room.identifier}")
     radiant_system.vintage = vintage
 
     # Selectbox for equipment_type
@@ -465,11 +452,10 @@ def get_VRFSystem(st, room):
 
     # Instantiate the VRF system with a unique identifier
     identifier = f"VRF-{room.identifier}"
-    vrf_system = VRF(identifier)
+    vrf_system = VRF(identifier,vintage=st.session_state.vintage_hvac)
 
     # Selectbox for vintage
-    vintage_options = ['DOE_Ref_Pre_1980', 'DOE_Ref_1980_2004', 'ASHRAE_2004', 'ASHRAE_2007', 'ASHRAE_2010', 'ASHRAE_2013', 'ASHRAE_2016', 'ASHRAE_2019']
-    vintage = st.selectbox("Vintage", options=vintage_options, index=vintage_options.index(vrf_system.vintage), key=f"vintage-{room.identifier}")
+    vintage = st.selectbox("Vintage", options=VINTAGE_HVAC_OPTIONS, index=VINTAGE_HVAC_OPTIONS.index(vrf_system.vintage), key=f"vintage-{room.identifier}")
     vrf_system.vintage = vintage
 
     # The VRF system has a single equipment type option 'VRF'.
@@ -486,11 +472,10 @@ def get_WindowACSystem(st, room):
 
     # Instantiate the WindowAC system with a unique identifier
     identifier = f"WindowAC-{room.identifier}"
-    window_ac_system = WindowAC(identifier)
+    window_ac_system = WindowAC(identifier,vintage=st.session_state.vintage_hvac)
 
     # Selectbox for vintage
-    vintage_options = ['DOE_Ref_Pre_1980', 'DOE_Ref_1980_2004', 'ASHRAE_2004', 'ASHRAE_2007', 'ASHRAE_2010', 'ASHRAE_2013', 'ASHRAE_2016', 'ASHRAE_2019']
-    vintage = st.selectbox("Vintage", options=vintage_options, index=vintage_options.index(window_ac_system.vintage), key=f"vintage-{room.identifier}")
+    vintage = st.selectbox("Vintage", options=VINTAGE_HVAC_OPTIONS, index=VINTAGE_HVAC_OPTIONS.index(window_ac_system.vintage), key=f"vintage-{room.identifier}")
     window_ac_system.vintage = vintage
 
     # Selectbox for equipment_type
@@ -508,11 +493,10 @@ def get_WSHPSystem(st, room):
 
     # Instantiate the WSHP system with a unique identifier
     identifier = f"WSHP-{room.identifier}"
-    wshp_system = WSHP(identifier)
+    wshp_system = WSHP(identifier,vintage=st.session_state.vintage_hvac)
 
     # Selectbox for vintage
-    vintage_options = ['DOE_Ref_Pre_1980', 'DOE_Ref_1980_2004', 'ASHRAE_2004', 'ASHRAE_2007', 'ASHRAE_2010', 'ASHRAE_2013', 'ASHRAE_2016', 'ASHRAE_2019']
-    vintage = st.selectbox("Vintage", options=vintage_options, index=vintage_options.index(wshp_system.vintage), key=f"vintage-{room.identifier}")
+    vintage = st.selectbox("Vintage", options=VINTAGE_HVAC_OPTIONS, index=VINTAGE_HVAC_OPTIONS.index(wshp_system.vintage), key=f"vintage-{room.identifier}")
     wshp_system.vintage = vintage
 
     # Selectbox for equipment_type

@@ -19,8 +19,8 @@ def assign_constructions():
     Parameters: None
     Returns: None - This function directly modifies the session state and uses Streamlit components to display UI elements. """
     
-    get_vintage_constructions()
-    get_climate_zone("constructions")
+    #get_vintage_constructions(st,key_="constructions_tab")
+    #get_climate_zone(st,key_="constructions_tab")
 
     trimmed_zone = "ClimateZone" + st.session_state.climate_zone[0]
     room_construction_set = filter_array_by_keywords(CONSTRUCTION_SETS, [st.session_state.vintage_constructions,trimmed_zone ], False)
@@ -29,6 +29,9 @@ def assign_constructions():
     # Display each room's properties using expanders.
     for room in st.session_state.hb_model.rooms:
         with st.expander(f"Room identifier: {room.identifier}"):
+            key_= f"{room.identifier}_constructions_tab"
+            get_vintage_constructions(st,key_)
+            #get_climate_zone(st,key_) - comment out for now
 
             # Generate a unique key for the room program selectbox using the room's identifier.
             # This ensures that each selectbox in the loop is treated as a distinct widget by Streamlit.

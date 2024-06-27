@@ -12,7 +12,8 @@ from outputs import display_baseline_results, display_improved_results
 from datetime import datetime
 import json
 from honeybee_energy.baseline.create import model_to_baseline
-from honeybee_energy.baseline.result import appendix_g_summary
+from honeybee_energy.baseline.result import appendix_g_summary,leed_v4_summary
+
 
 
 st.set_page_config(
@@ -35,8 +36,8 @@ def main(platform):
     out_container = st.container()  # container to eventually hold the results
     sidebar_container = st.sidebar.container()
 
-    in_model_source = sidebar_container.radio("Select model source:", ("Geometry wizard","HBJSON"))
-    if in_model_source == "Geometry wizard":
+    in_model_source = sidebar_container.radio("Select model source:", ("Model wizard","HBJSON"))
+    if in_model_source == "Model wizard":
         geometry_wizard(sidebar_container)
     else:
         get_model_inputs(platform, sidebar_container)
@@ -111,9 +112,14 @@ def main(platform):
             improved_col.download_button(label="Download improved HBJSON",data=json.dumps(st.session_state.hb_model.to_dict()),file_name=f"HBmodel_{dt}.json",mime="application/json")
 
         if st.session_state.improved_sql_results and st.session_state.baseline_sql_results:
-            out_container.write('Appendix G summary ({})'.format('kBtu/ft2' if st.session_state.ip_units else 'kWh/m2'))
-            st.session_state.appendix_g_summary =appendix_g_summary(st.session_state.sql_improved, st.session_state.sql_baseline,st.session_state.climate_zone,building_type=st.session_state.building_type,electricity_cost=st.session_state.electricity_cost, natural_gas_cost=st.session_state.natural_gas_cost)
-            out_container.json(st.session_state.appendix_g_summary)
+            #out_container.write('Summary ({})'.format('kBtu/ft2' if st.session_state.ip_units else 'kWh/m2'))
+            out_container.write("Summary:")
+            st.session_state.appendix_g_summary = leed_v4_summary(st.session_state.sql_improved, st.session_state.sql_baseline,st.session_state.climate_zone,building_type=st.session_state.building_type,electricity_cost=st.session_state.electricity_cost, natural_gas_cost=st.session_state.natural_gas_cost)
+            col1, col2, col3 = out_container.columns(3)
+            col1.metric(label="PCI", value=round(st.session_state.appendix_g_summary["pci"],3),delta=st.session_state.appendix_g_summary["pci_improvement"])
+            col2.metric(label="Carbon", value=round(st.session_state.appendix_g_summary["carbon"],3),delta=st.session_state.appendix_g_summary["carbon_improvement"])
+            col3.metric(label="LEED Points", value=st.session_state.appendix_g_summary["leed_points"])
+            #out_container.json(st.session_state.appendix_g_summary)
             
 
 if __name__ == '__main__':

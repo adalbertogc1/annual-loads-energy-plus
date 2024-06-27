@@ -23,8 +23,8 @@ def iterate_rooms_and_display_properties():
     Parameters: None
     Returns: None - This function directly modifies the session state and uses Streamlit components to display UI elements. """
     
-    get_vintage_loads() 
-    get_building_type("loads")
+    #get_vintage_loads() 
+    #get_building_type("loads")
         # Filter room programs based on the selected construction period and building type.
     # 'filter_array_by_keywords' is a function that likely takes a list of items ('PROGRAM_TYPES') and a list of keywords (selected vintage and building type)
     # and returns a subset of 'PROGRAM_TYPES' that match the keywords. The 'False' parameter might control the filtering behavior or case sensitivity.
@@ -34,7 +34,12 @@ def iterate_rooms_and_display_properties():
     # 'st.session_state.hb_model.rooms' contains a list of rooms in the model. For each room, various properties will be displayed and can be modified.
     # Display each room's properties using expanders.
     for room in st.session_state.hb_model.rooms:
+
         with st.expander(f"Room identifier: {room.identifier}"):
+            key_ = f'{room.identifier}_loads'
+            get_vintage_loads(st,key_) 
+            get_building_type(st,key_)
+            
             st.write("Floor area")
             st.code(room.floor_area)
 

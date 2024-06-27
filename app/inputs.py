@@ -51,6 +51,11 @@ def initialize():
         st.session_state.climate_zone = None
     if 'building_type' not in st.session_state:
         st.session_state.building_type = None
+    if 'building_code' not in st.session_state:
+        st.session_state.building_code = None
+    if 'vintage_hvac' not in st.session_state:
+        st.session_state.vintage_hvac = None
+        
 
     # geometry wizard
     if "temp_folder" not in st.session_state: 
