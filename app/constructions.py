@@ -4,6 +4,10 @@ from utils import get_vintage_constructions, get_climate_zone, update_properties
 from honeybee.search import filter_array_by_keywords
 from honeybee_energy.lib.constructionsets import CONSTRUCTION_SETS
 from honeybee_energy.lib.constructionsets import construction_set_by_identifier
+from honeybee_energy.construction.window import WindowConstruction
+from honeybee_energy.constructionset import ApertureConstructionSet
+from honeybee_energy.constructionset import ConstructionSet
+    
 
 def assign_constructions():
     """Iterates through rooms in a Honeybee model, displaying and allowing the modification of various properties such as lighting, 
@@ -108,18 +112,30 @@ def assign_constructions():
                 st.divider() 
                 st.subheader("Aperture Set") 
                 st.write("Exterior construction")
-                window_construction = new_construction_set.aperture_set.window_construction.duplicate() 
+                window_construction = new_construction_set.aperture_set.window_construction#.duplicate() 
                 st.text_input("Display name",window_construction.display_name, disabled = True, key = f"{construction_set_name}_window_construction_display_name_{room.identifier}")
-                st.text_input("U-value",window_construction.u_value, disabled = True, key = f"{construction_set_name}_window_construction_u_value_{room.identifier}" )
-                window_construction_dict = window_construction.to_dict()
+                new_u_value = st.text_input("U-value",window_construction.u_value, disabled = False,  key = f"{construction_set_name}_window_construction_u_value_{room.identifier}" )
+                if new_u_value != window_construction.u_value:  
+                    if st.button("Update u value", key = f"update_u_value_{room.identifier}"):
+                        new_window_construction = WindowConstruction.from_simple_parameters(window_construction.identifier, new_u_value, shgc=0.5, vt=0.6)
+                        new_aperture_set = ApertureConstructionSet(window_construction=new_window_construction)
+                        new_construction_set =ConstructionSet("new_construction_set", wall_set= new_construction_set.wall_set, floor_set=new_construction_set.floor_set, roof_ceiling_set=new_construction_set.roof_ceiling_set, aperture_set=new_aperture_set, door_set=new_construction_set.door_set, shade_construction=new_construction_set.shade_construction, air_boundary_construction=new_construction_set.air_boundary_construction)
+                        room.properties.energy.construction_set = new_construction_set
+                        st.session_state.improved_sql_results = None
+                window_construction_dict = new_construction_set.aperture_set.window_construction.to_dict()
                 updated_window_construction_dict = update_properties_dict(room, window_construction_dict, "window_construction")
-                #new_construction_set.aperture_set.window_construction = updated_exterior_construction_dict
+                #if updated_window_construction_dict != window_construction_dict:
                 
+
                 
            
 
             # Assign the updated construction type back to the original cosntructionType
-            if room.properties.energy.construction_set != new_construction_set:
-                room.properties.energy.construction_set = new_construction_set
+            #if room.properties.energy.construction_set != new_construction_set:
+            # Button to apply the update
+            #if st.button("Update constructions", key = f"update_constructions_{room.identifier}"):
+                #room.properties.energy.construction_set = new_construction_set
                 #st.session_state.baseline_sql_results = None
-                st.session_state.improved_sql_results = None
+                #st.session_state.improved_sql_results = None
+                #st.json(new_construction_set.aperture_set.window_construction.to_dict())
+                
