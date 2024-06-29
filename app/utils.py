@@ -231,7 +231,10 @@ def get_building_code(container, key_="building_code"):
     if st.session_state.vintage_loads:
         default_value = st.session_state.vintage_loads
     else:
-        default_value = standards_registry_list[6]  # Default to the seventh item if not set
+        default_value = standards_registry_list[1]  # Default to the seventh item if not set
+        st.session_state.vintage_loads = default_value
+        st.session_state.vintage_constructions =default_value
+        st.session_state.vintage_hvac =find_partial_matches(list(VINTAGE_HVAC_OPTIONS), default_value)[-1]
 
     container.selectbox(
         'Building Code:', 
