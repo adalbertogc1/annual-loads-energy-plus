@@ -114,12 +114,12 @@ def main(platform):
         if st.session_state.improved_sql_results and st.session_state.baseline_sql_results:
             #out_container.write('Summary ({})'.format('kBtu/ft2' if st.session_state.ip_units else 'kWh/m2'))
             out_container.write("Summary:")
-            st.session_state.appendix_g_summary = leed_v4_summary(st.session_state.sql_improved, st.session_state.sql_baseline,st.session_state.climate_zone,building_type=st.session_state.building_type,electricity_cost=st.session_state.electricity_cost, natural_gas_cost=st.session_state.natural_gas_cost)
+            st.session_state.leed_v4_summary = leed_v4_summary(st.session_state.sql_improved, st.session_state.sql_baseline,st.session_state.climate_zone,building_type=st.session_state.building_type,electricity_cost=st.session_state.electricity_cost, natural_gas_cost=st.session_state.natural_gas_cost)
             col1, col2, col3 = out_container.columns(3)
-            col1.metric(label="PCI", value=round(st.session_state.appendix_g_summary["pci"],3),delta=st.session_state.appendix_g_summary["pci_improvement"])
-            col2.metric(label="Carbon", value=round(st.session_state.appendix_g_summary["carbon"],3),delta=st.session_state.appendix_g_summary["carbon_improvement"])
-            col3.metric(label="LEED Points", value=st.session_state.appendix_g_summary["leed_points"])
-            #out_container.json(st.session_state.appendix_g_summary)
+            col1.metric(label="PCI", value=round(st.session_state.leed_v4_summary["pci"],3),delta=st.session_state.leed_v4_summary["pci_improvement"])
+            col2.metric(label="Carbon", value=round(st.session_state.leed_v4_summary["carbon"],3),delta=st.session_state.leed_v4_summary["carbon_improvement"])
+            col3.metric(label="LEED Points", value=st.session_state.leed_v4_summary["leed_points"])
+
             
 
 if __name__ == '__main__':
