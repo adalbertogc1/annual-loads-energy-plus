@@ -12,7 +12,7 @@ from outputs import display_baseline_results, display_improved_results
 from datetime import datetime
 import json
 from honeybee_energy.baseline.create import model_to_baseline
-from honeybee_energy.baseline.result import appendix_g_summary,leed_v4_summary
+from honeybee_energy.baseline.result import leed_v4_summary
 
 
 
