@@ -6,8 +6,9 @@ from honeybee_energy.lib.constructionsets import CONSTRUCTION_SETS
 from honeybee_energy.lib.constructionsets import construction_set_by_identifier
 from honeybee_energy.construction.window import WindowConstruction
 from honeybee_energy.constructionset import ApertureConstructionSet
+from honeybee_energy.constructionset import WallConstructionSet
 from honeybee_energy.constructionset import ConstructionSet
-    
+from honeybee_energy.construction.opaque import OpaqueConstruction
 
 def assign_constructions():
     """Iterates through rooms in a Honeybee model, displaying and allowing the modification of various properties such as lighting, 
@@ -62,9 +63,38 @@ def assign_constructions():
                     st.text_input("Solar Reflectance",exterior_construction.outside_solar_reflectance, disabled = True,  key = f"{construction_set_name}_wall_set_construction_outside_solar_reflectance_{room.identifier}" )
                 with col3:
                     st.text_input("Outside Emissivity",exterior_construction.outside_emissivity, disabled = True,  key = f"{construction_set_name}_wall_set_outside_emissivity_{room.identifier}" )
+
                 exterior_construction_dict = exterior_construction.to_dict()
                 update_properties_dict(room, exterior_construction_dict, "exterior_construction")
                 
+                with st.container():
+                    st.write("Update External Wall Construction:")
+                    col1, col2, col3 = st.columns(3)
+                    with col1:
+                        new_r_value = st.text_input("New R value", value= 1.0, key=f"new_r_value_{room.identifier}")
+                    with col2:
+                        new_thermal_absortance = st.text_input("New Thermal Absortance", value=0.9, key=f"new_ta_{room.identifier}")
+                    with col3:
+                        new_solar_absorptance = st.text_input("New Solar Absorptance", value=0.7, key=f"new_sa_{room.identifier}")
+                    
+
+                    if st.button("Update external wall construction", key=f"update_external_wall_construction_{room.identifier}"):
+                        new_exterior_wall_construction = OpaqueConstruction.from_simple_parameters(room.identifier, new_r_value, roughness='MediumRough', thermal_absorptance=new_thermal_absortance, solar_absorptance=new_solar_absorptance)
+                        new_wall_set = WallConstructionSet(exterior_construction=new_exterior_wall_construction, interior_construction=new_construction_set.wall_set.interior_construction, ground_construction=new_construction_set.wall_set.ground_construction)
+                        new_construction_set = ConstructionSet(
+                            "new_construction_set",
+                            wall_set=new_wall_set,
+                            floor_set=new_construction_set.floor_set,
+                            roof_ceiling_set=new_construction_set.roof_ceiling_set,
+                            aperture_set=new_construction_set.aperture_set,
+                            door_set=new_construction_set.door_set,
+                            shade_construction=new_construction_set.shade_construction,
+                            air_boundary_construction=new_construction_set.air_boundary_construction
+                        )
+                        room.properties.energy.construction_set = new_construction_set
+                        #st.session_state.improved_sql_results = None
+                        st.success("External wall constructions updated successfully!")
+                #
                 st.divider() 
                 st.write("Interior construction")
                 interior_construction = new_construction_set.wall_set.interior_construction
