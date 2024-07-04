@@ -281,3 +281,33 @@ def get_climate_zone(container,key_="construction"):
         st.session_state.climate_zone = '4A'
         #st.session_state.baseline_sql_results = None
         #st.session_state.improved_sql_results = None
+
+###CHANGES MADE ALONE####
+
+def serialize_model(model):
+    # Convert the model to a serializable format (e.g., JSON)
+    model_json = model.to_json()
+    return model_json
+
+def deserialize_model(model_json):
+    # Convert the JSON back to a model
+    model = model.from_json(model_json)
+    return model
+
+
+def save_model(model):
+    model_json = serialize_model(model)
+    with open("model.json", "w") as file:
+        file.write(model_json)
+
+def provide_download_link():
+    save_model(st.session_state.hb_model)
+    with open("model.json", "rb") as file:
+        st.download_button(label="Download Model", data=file, file_name="model.json", mime="application/json")
+
+def upload_model():
+    uploaded_file = st.file_uploader("Upload Model", type=["json"])
+    if uploaded_file is not None:
+        model_json = uploaded_file.read().decode("utf-8")
+        st.session_state.hb_model = deserialize_model(model_json)
+        st.success("Model uploaded successfully.")
