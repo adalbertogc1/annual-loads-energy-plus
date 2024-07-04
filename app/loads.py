@@ -52,7 +52,7 @@ def iterate_rooms_and_display_properties():
             selectbox_key = f"room_prog_{room.identifier}"
             # Determine the current index of the room's program type in the 'room_prog' list to set it as the default selection in the selectbox.
             # If the room's program type identifier is not in 'room_prog', default to the first item (index 0).
-            current_prog_index = room_prog.index(room.properties.energy.program_type.identifier) if room.properties.energy.program_type.identifier in room_prog else room_prog.index(room_prog[-1])#.index(random.choice(room_prog))#0
+            current_prog_index = room_prog.index(room.properties.energy.program_type.identifier) if room.properties.energy.program_type.identifier in room_prog else room_prog.index(room_prog[-4])#.index(random.choice(room_prog))#0
             # Create a selectbox for changing the room's program type, with the current program type pre-selected.
             new_room_prog = st.selectbox("Room Program", room_prog, index=current_prog_index, key=selectbox_key)
             

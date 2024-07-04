@@ -3,3 +3,4 @@ Users/
 app/data/
 .DS_Store
 app/__pycache__
+app/test/weather

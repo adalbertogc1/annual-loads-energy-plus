@@ -113,8 +113,8 @@ def initialize():
         st.session_state.improved_sql_results = None
     if "pci_target" not in st.session_state:
         st.session_state.pci_target = None
-    if "appendix_g_summary" not in st.session_state:
-        st.session_state.appendix_g_summary = None
+    if "leed_v4_summary" not in st.session_state:
+        st.session_state.leed_v4_summary = None
 
 
 def new_model():

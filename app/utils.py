@@ -12,6 +12,7 @@ from honeybee_energy.lib.programtypes import STANDARDS_REGISTRY
 from honeybee_energy.lib.programtypes import BUILDING_TYPES
 from honeybee.search import filter_array_by_keywords
 
+
 CLIMATE_ZONES = ('0A', '1A', '2A', '3A', '4A', '5A', '6A', '0B', '1B', '2B', '3B', '4B', '5B', '6B', '3C', '4C', '5C', '7', '8')
 VINTAGE_HVAC_OPTIONS = ('DOE_Ref_Pre_1980', 'DOE_Ref_1980_2004', 'ASHRAE_2004', 'ASHRAE_2007', 'ASHRAE_2010', 'ASHRAE_2013', 'ASHRAE_2016', 'ASHRAE_2019')
 
@@ -143,7 +144,7 @@ def get_weather_files_from_url(_weather_URL, _folder_= "test/weather"):
 
 def update_properties_dict(room, properties_dict, property_name, parent_key=''):
     updated_dict = copy.deepcopy(properties_dict)  # Use deepcopy to handle nested dicts correctly
-    for key, value in properties_dict.items():
+    for key, value in updated_dict.items():
         unique_key = f"{parent_key}_{key}" if parent_key else key
         input_key = f"{room.identifier}_{property_name}_{unique_key}"
 
@@ -151,11 +152,14 @@ def update_properties_dict(room, properties_dict, property_name, parent_key=''):
             #updated_dict[key] = update_properties_dict(room, value, property_name, unique_key)
             st.write(key)
             st.json(value,expanded=False)
+                            
+            
         elif isinstance(value, str):
             continue
         elif isinstance(value, list):
             for v in value:
                 st.json(v,expanded=False)
+
         else:
             # Handling different data types
             new_value = st.text_input(f"{unique_key}:", value=str(value), key=input_key)
@@ -231,7 +235,10 @@ def get_building_code(container, key_="building_code"):
     if st.session_state.vintage_loads:
         default_value = st.session_state.vintage_loads
     else:
-        default_value = standards_registry_list[6]  # Default to the seventh item if not set
+        default_value = standards_registry_list[1]  # Default to the seventh item if not set
+        st.session_state.vintage_loads = default_value
+        st.session_state.vintage_constructions =default_value
+        st.session_state.vintage_hvac =find_partial_matches(list(VINTAGE_HVAC_OPTIONS), default_value)[-1]
 
     container.selectbox(
         'Building Code:', 
