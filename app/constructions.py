@@ -10,6 +10,9 @@ from honeybee_energy.constructionset import WallConstructionSet
 from honeybee_energy.constructionset import ConstructionSet
 from honeybee_energy.construction.opaque import OpaqueConstruction
 
+
+
+
 def assign_constructions():
     """Iterates through rooms in a Honeybee model, displaying and allowing the modification of various properties such as lighting, 
     people gains, equipment gains, service hot water, infiltration, ventilation, and setpoints. It requires a valid Honeybee model object 
@@ -28,25 +31,40 @@ def assign_constructions():
     #get_climate_zone(st,key_="constructions_tab")
 
     trimmed_zone = "ClimateZone" + st.session_state.climate_zone[0]
-    room_construction_set = filter_array_by_keywords(CONSTRUCTION_SETS, [st.session_state.vintage_constructions,trimmed_zone ], False)
+    building_construction_set = filter_array_by_keywords(CONSTRUCTION_SETS, [st.session_state.vintage_constructions,trimmed_zone ], False)
+    key_= "constructions_tab"
+    get_vintage_constructions(st,key_)
+    #get_climate_zone(st,key_) - comment out for now
+
+    #TODO revover the global construction set saved in the model and assign as default
+    #TODO check chat GPT suggestion; model.properties.energy.global_construction_set = new_construction_set
+
+
+    # Generate a unique key for the room program selectbox using the room's identifier.
+    # This ensures that each selectbox in the loop is treated as a distinct widget by Streamlit.
+    selectbox_key = filter_array_by_keywords(building_construction_set, ["Mass"])[0] #f"room_construction_set_{room.identifier}"
+    # Determine the current index of the room's program type in the 'room_prog' list to set it as the default selection in the selectbox.
+    # If the room's program type identifier is not in 'room_prog', default to the first item (index 0).
+    current_construction_set = st.session_state.hb_model.properties.energy.global_construction_set #building_construction_set.index(room.properties.energy.construction_set.identifier) if room.properties.energy.construction_set.identifier in building_construction_set else building_construction_set.index(selectbox_key)#0
+    # Create a selectbox for changing the room's program type, with the current program type pre-selected.
+    if current_construction_set not in building_construction_set:
+        building_construction_set.append(current_construction_set)
+
+    def update_room_construction_set():
+        new_construction_set = construction_set_by_identifier(selectbox_key)
+        for room in st.session_state.hb_model.rooms:
+            room.properties.energy.construction_set = new_construction_set
+        #st.session_state.improved_sql_results = None
+    
+    new_construction_set = st.selectbox("Construction set", building_construction_set, index=0, key=selectbox_key, on_change=update_room_construction_set)
+    new_construction_set = construction_set_by_identifier(new_construction_set)
+    
     # Iterate over each room in the Honeybee model.
     # 'st.session_state.hb_model.rooms' contains a list of rooms in the model. For each room, various properties will be displayed and can be modified.
     # Display each room's properties using expanders.
     for room in st.session_state.hb_model.rooms:
         with st.expander(f"Room identifier: {room.identifier}"):
-            key_= f"{room.identifier}_constructions_tab"
-            get_vintage_constructions(st,key_)
-            #get_climate_zone(st,key_) - comment out for now
-
-            # Generate a unique key for the room program selectbox using the room's identifier.
-            # This ensures that each selectbox in the loop is treated as a distinct widget by Streamlit.
-            selectbox_key = f"room_construction_set_{room.identifier}"
-            # Determine the current index of the room's program type in the 'room_prog' list to set it as the default selection in the selectbox.
-            # If the room's program type identifier is not in 'room_prog', default to the first item (index 0).
-            current_construction_set_index = room_construction_set.index(room.properties.energy.construction_set.identifier) if room.properties.energy.construction_set.identifier in room_construction_set else room_construction_set.index(filter_array_by_keywords(room_construction_set, ["Mass"])[0])#0
-            # Create a selectbox for changing the room's program type, with the current program type pre-selected.
-            new_construction_set = st.selectbox("Construction set", room_construction_set, index=current_construction_set_index, key=selectbox_key)
-            new_construction_set = construction_set_by_identifier(new_construction_set)
+            
             
             # Check if the new program type has a lighting object associated with it.
             if new_construction_set.wall_set:
