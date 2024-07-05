@@ -90,8 +90,10 @@ def main(platform):
 
             #if st.session_state.hb_model_baseline:
             dt = datetime.now().strftime("%Y_%m_%d-%I_%M_%S_%p")
-            baseline_col.download_button(label="Download baseline HBJSON",data=json.dumps(st.session_state.hb_model_baseline.to_dict()),file_name=f"HBmodel_{dt}.json",mime="application/json")
-        
+            baseline_col.download_button(label="Download baseline HBJSON",
+                             data=json.dumps(st.session_state.hb_model_baseline.to_dict()),
+                             file_name=f"HBmodel_{dt}.json",
+                             mime="application/json")        
         with improved_col:
             run_improved_simulation(
                 st,
@@ -109,7 +111,10 @@ def main(platform):
 
             #if st.session_state.hb_model:
             dt = datetime.now().strftime("%Y_%m_%d-%I_%M_%S_%p")
-            improved_col.download_button(label="Download improved HBJSON",data=json.dumps(st.session_state.hb_model.to_dict()),file_name=f"HBmodel_{dt}.json",mime="application/json")
+            improved_col.download_button(label="Download improved HBJSON",
+                             data=json.dumps(st.session_state.hb_model.to_dict()),
+                             file_name=f"HBmodel_{dt}.json",
+                             mime="application/json")
 
         if st.session_state.improved_sql_results and st.session_state.baseline_sql_results:
             #out_container.write('Summary ({})'.format('kBtu/ft2' if st.session_state.ip_units else 'kWh/m2'))

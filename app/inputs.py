@@ -55,7 +55,7 @@ def initialize():
         st.session_state.building_code = None
     if 'vintage_hvac' not in st.session_state:
         st.session_state.vintage_hvac = None
-        
+
 
     # geometry wizard
     if "temp_folder" not in st.session_state: 
@@ -130,7 +130,7 @@ def new_model():
         st.session_state.hb_model = Model.from_dict(hbjson_data)
 
 
-def get_model(column):
+def get_model1(column):
     """Get the Model input from the App input."""
     # load the model object from the file data
     with column:
@@ -138,6 +138,16 @@ def get_model(column):
     if st.session_state.hb_model is None and hbjson_data is not None \
             and 'hbjson' in hbjson_data:
         st.session_state.hb_model = Model.from_dict(hbjson_data['hbjson'])
+
+
+def get_model(column):
+    """Get the Model input from the App input."""
+    # load the model object from the file data
+    with column:
+        hbjson_data = get_hbjson(key='hbjson_data', on_change=new_model)
+    if hbjson_data is not None and 'hbjson' in hbjson_data:
+        st.session_state.hb_model = Model.from_dict(hbjson_data['hbjson'])
+
 
 
 def generate_vtk_model(hb_model: Model, container):

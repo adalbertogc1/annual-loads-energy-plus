@@ -16,6 +16,12 @@ from honeybee.search import filter_array_by_keywords
 CLIMATE_ZONES = ('0A', '1A', '2A', '3A', '4A', '5A', '6A', '0B', '1B', '2B', '3B', '4B', '5B', '6B', '3C', '4C', '5C', '7', '8')
 VINTAGE_HVAC_OPTIONS = ('DOE_Ref_Pre_1980', 'DOE_Ref_1980_2004', 'ASHRAE_2004', 'ASHRAE_2007', 'ASHRAE_2010', 'ASHRAE_2013', 'ASHRAE_2016', 'ASHRAE_2019')
 
+# Function to delete a session state variable
+def delete_session_state_variable(variable_name):
+    if variable_name in st.session_state:
+        del st.session_state[variable_name]
+
+
 def find_partial_matches(data_list, keyword):
     # Convert keyword to lowercase to make the search case-insensitive
     keyword_lower = keyword.lower()
@@ -201,6 +207,7 @@ def get_vintage_constructions(container,key_="constructions"):
     in_vintage = container.selectbox('Construction Period:', standards_registry_list, standards_registry_list.index(st.session_state.vintage_constructions)if st.session_state.vintage_constructions else standards_registry_list.index(filter_array_by_keywords(standards_registry_list, ["1980_2004"])[0]), key = f"construction_period_{key_}")
     if in_vintage != st.session_state.vintage_constructions:
         st.session_state.vintage_constructions = in_vintage
+        delete_session_state_variable("selected_construction_set")
 
 
 def get_building_code1(container,key_="building_code"):
@@ -288,3 +295,33 @@ def get_climate_zone(container,key_="construction"):
         st.session_state.climate_zone = '4A'
         #st.session_state.baseline_sql_results = None
         #st.session_state.improved_sql_results = None
+
+###CHANGES MADE ALONE####
+
+def serialize_model(model):
+    # Convert the model to a serializable format (e.g., JSON)
+    model_json = model.to_json()
+    return model_json
+
+def deserialize_model(model_json):
+    # Convert the JSON back to a model
+    model = model.from_json(model_json)
+    return model
+
+
+def save_model(model):
+    model_json = serialize_model(model)
+    with open("model.json", "w") as file:
+        file.write(model_json)
+
+def provide_download_link():
+    save_model(st.session_state.hb_model)
+    with open("model.json", "rb") as file:
+        st.download_button(label="Download Model", data=file, file_name="model.json", mime="application/json")
+
+def upload_model():
+    uploaded_file = st.file_uploader("Upload Model", type=["json"])
+    if uploaded_file is not None:
+        model_json = uploaded_file.read().decode("utf-8")
+        st.session_state.hb_model = deserialize_model(model_json)
+        st.success("Model uploaded successfully.")
