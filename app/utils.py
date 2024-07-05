@@ -206,9 +206,9 @@ def get_vintage_constructions(container,key_="constructions"):
     standards_registry_list = list(STANDARDS_REGISTRY)
     in_vintage = container.selectbox('Construction Period:', standards_registry_list, standards_registry_list.index(st.session_state.vintage_constructions)if st.session_state.vintage_constructions else standards_registry_list.index(filter_array_by_keywords(standards_registry_list, ["1980_2004"])[0]), key = f"construction_period_{key_}")
     if in_vintage != st.session_state.vintage_constructions:
-        st.session_state.vintage_constructions = in_vintage
         delete_session_state_variable("selected_construction_set")
-
+        st.session_state.vintage_constructions = in_vintage
+        
 
 def get_building_code1(container,key_="building_code"):
     help = "Select the ASHRAE 90.1 version."

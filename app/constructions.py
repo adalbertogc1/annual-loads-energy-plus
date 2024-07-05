@@ -60,7 +60,7 @@ def assign_constructions():
                 if default_set in building_construction_set:
                     st.session_state.selected_construction_set = default_set
                 else:
-                    st.error(f"Default construction set {default_set} is not in the list of building construction sets.")
+                    building_construction_set = filter_array_by_keywords(CONSTRUCTION_SETS, [st.session_state.vintage_constructions,trimmed_zone ], False)
                     st.session_state.selected_construction_set = building_construction_set[0]
                 update_room_construction_set()
 
