@@ -2,7 +2,7 @@
 from ladybug.epw import EPW
 from pathlib import Path
 import streamlit as st
-from utils import get_weather_files_from_url
+from utils import get_weather_files_from_url, delete_session_state_variable
 
 def new_weather_file():
     """Process a newly-uploaded EPW file."""
@@ -117,7 +117,9 @@ def get_weather_inputs(host: str, container):
 
     if st.session_state.epw_path:
         epw = load_epw(epw_file=st.session_state.epw_path)
-        st.session_state.climate_zone = epw.ashrae_climate_zone
+        if epw.ashrae_climate_zone != st.session_state.climate_zone:
+            st.session_state.climate_zone = epw.ashrae_climate_zone
+            delete_session_state_variable("selected_construction_set")
         if container.checkbox(label='Weather insights', value=False):
             visualize_weather(epw,container)
 

@@ -16,6 +16,12 @@ from honeybee.search import filter_array_by_keywords
 CLIMATE_ZONES = ('0A', '1A', '2A', '3A', '4A', '5A', '6A', '0B', '1B', '2B', '3B', '4B', '5B', '6B', '3C', '4C', '5C', '7', '8')
 VINTAGE_HVAC_OPTIONS = ('DOE_Ref_Pre_1980', 'DOE_Ref_1980_2004', 'ASHRAE_2004', 'ASHRAE_2007', 'ASHRAE_2010', 'ASHRAE_2013', 'ASHRAE_2016', 'ASHRAE_2019')
 
+# Function to delete a session state variable
+def delete_session_state_variable(variable_name):
+    if variable_name in st.session_state:
+        del st.session_state[variable_name]
+
+
 def find_partial_matches(data_list, keyword):
     # Convert keyword to lowercase to make the search case-insensitive
     keyword_lower = keyword.lower()
@@ -201,6 +207,7 @@ def get_vintage_constructions(container,key_="constructions"):
     in_vintage = container.selectbox('Construction Period:', standards_registry_list, standards_registry_list.index(st.session_state.vintage_constructions)if st.session_state.vintage_constructions else standards_registry_list.index(filter_array_by_keywords(standards_registry_list, ["1980_2004"])[0]), key = f"construction_period_{key_}")
     if in_vintage != st.session_state.vintage_constructions:
         st.session_state.vintage_constructions = in_vintage
+        delete_session_state_variable("selected_construction_set")
 
 
 def get_building_code1(container,key_="building_code"):
