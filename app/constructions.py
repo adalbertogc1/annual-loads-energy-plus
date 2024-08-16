@@ -38,11 +38,11 @@ def assign_constructions():
     key_= "constructions_tab"
 
     # Check if the model has construction sets
-    if st.session_state.hb_model.properties.energy.construction_sets:
-        generic_constructions = True
-    else:
-        generic_constructions = False
-
+    #if st.session_state.hb_model.properties.energy.construction_sets:
+        #generic_constructions = True
+    #else:
+        #generic_constructions = False
+    generic_constructions = False
     if st.checkbox("Import constructions from building code?", value= generic_constructions):
         col1, col2 = st.columns( [1, 2])
         with col1:
@@ -73,9 +73,9 @@ def assign_constructions():
                 key='selected_construction_set', 
                 on_change=update_room_construction_set
             )
-    else:
-        for room in st.session_state.hb_model.rooms:
-            room.properties.energy.construction_set = None
+    #else:
+        #for room in st.session_state.hb_model.rooms:
+            #room.properties.energy.construction_set = None
         
     # Iterate over each room in the Honeybee model.
     # 'st.session_state.hb_model.rooms' contains a list of rooms in the model. For each room, various properties will be displayed and can be modified.
@@ -89,19 +89,7 @@ def assign_constructions():
                 st.divider() 
                 st.subheader("Wall Set") 
                 st.write("Exterior construction")
-                exterior_construction = room.properties.energy.construction_set.wall_set.exterior_construction
-                st.text_input("Display name",exterior_construction.display_name, disabled = True, key = f"{construction_set_name}_exterior_construction_display_name_{room.identifier}")
-                col1, col2, col3 = st.columns(3)
-                with col1:
-                    st.text_input("U-value",exterior_construction.u_value, disabled = True,  key = f"{construction_set_name}_wall_set_u_value_{room.identifier}" )
-                with col2:
-                    st.text_input("Solar Reflectance",exterior_construction.outside_solar_reflectance, disabled = True,  key = f"{construction_set_name}_wall_set_construction_outside_solar_reflectance_{room.identifier}" )
-                with col3:
-                    st.text_input("Outside Emissivity",exterior_construction.outside_emissivity, disabled = True,  key = f"{construction_set_name}_wall_set_outside_emissivity_{room.identifier}" )
 
-                exterior_construction_dict = exterior_construction.to_dict()
-                update_properties_dict(room, exterior_construction_dict, "exterior_construction")
-                
                 with st.container():
                     st.write("Update External Wall Construction:")
                     col1, col2, col3 = st.columns(3)
@@ -115,7 +103,7 @@ def assign_constructions():
 
                     if st.button("Update external wall construction", key=f"update_external_wall_construction_{room.identifier}"):
                         new_exterior_wall_construction = OpaqueConstruction.from_simple_parameters(
-                            room.identifier,
+                            f"new_opaque_construction_{room.identifier}",
                             new_r_value,
                             roughness='MediumRough',
                             thermal_absorptance=new_thermal_absorptance,
@@ -143,6 +131,21 @@ def assign_constructions():
 
                         room.properties.energy.construction_set = new_construction_set
                         st.success("External wall constructions updated successfully!")
+
+                exterior_construction = room.properties.energy.construction_set.wall_set.exterior_construction
+                st.text_input("Display name",exterior_construction.display_name, disabled = True, key = f"{construction_set_name}_exterior_construction_display_name_{room.identifier}")
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    st.text_input("Current U-value",exterior_construction.u_value, disabled = True,  key = f"{construction_set_name}_wall_set_u_value_{room.identifier}" )
+                with col2:
+                    st.text_input("Current Solar Reflectance",exterior_construction.outside_solar_reflectance, disabled = True,  key = f"{construction_set_name}_wall_set_construction_outside_solar_reflectance_{room.identifier}" )
+                with col3:
+                    st.text_input("Current Outside Emissivity",exterior_construction.outside_emissivity, disabled = True,  key = f"{construction_set_name}_wall_set_outside_emissivity_{room.identifier}" )
+
+                exterior_construction_dict = exterior_construction.to_dict()
+                update_properties_dict(room, exterior_construction_dict, "exterior_construction")
+                
+                
 
                 st.divider() 
                 st.write("Interior construction")
@@ -187,34 +190,21 @@ def assign_constructions():
                 st.divider() 
                 st.subheader("Aperture Set") 
                 st.write("Window construction")
-                window_construction = room.properties.energy.construction_set.aperture_set.window_construction
-                st.text_input("Display name",window_construction.display_name, disabled = True, key = f"{construction_set_name}_window_construction_display_name_{room.identifier}")
-                col1, col2, col3 = st.columns(3)
-                with col1:
-                    st.text_input("U-value",window_construction.u_value, disabled = True,  key = f"{construction_set_name}_window_construction_u_value_{room.identifier}" )
-                with col2:
-                    st.text_input("SHGC",window_construction.shgc, disabled = True,  key = f"{construction_set_name}_window_construction_SHGC_{room.identifier}" )
-                with col3:
-                    st.text_input("Visible Transmittance",window_construction.visible_transmittance, disabled = True,  key = f"{construction_set_name}_window_construction_visible_transmittance_{room.identifier}" )
-
-                
-                window_construction_dict = room.properties.energy.construction_set.aperture_set.window_construction.to_dict()
-                update_properties_dict(room, window_construction_dict, "window_construction")
 
                 with st.container():
                     st.write("Update Window Construction:")
                     col1, col2, col3 = st.columns(3)
                     with col1:
-                        new_u_value = st.text_input("New U-value", value=4.5, key=f"new_u_value_{room.identifier}")
+                        new_u_value = st.number_input("New U-factor", value=1.0, min_value=0.0, max_value=3.0, key=f"new_u_value_{room.identifier}")
                     with col2:
-                        new_shgc = st.text_input("New SHGC", value=0.5, key=f"new_shgc_{room.identifier}")
+                        new_shgc = st.number_input("New SHGC", value=0.5, key=f"new_shgc_{room.identifier}")
                     with col3:
-                        new_vt = st.text_input("New Visible Transmittance", value=0.6, key=f"new_vt_{room.identifier}")
+                        new_vt = st.number_input("New Visible Transmittance", value=0.6, key=f"new_vt_{room.identifier}")
 
                     if st.button("Update window construction", key=f"update_window_construction_{room.identifier}"):
                         new_window_construction = WindowConstruction.from_simple_parameters(
-                            f"new_{window_construction.identifier}",
-                            float(new_u_value),
+                            f"new_window_construction_{room.identifier}",
+                            u_factor=float(new_u_value),
                             shgc=float(new_shgc),
                             vt=float(new_vt)
                         )
@@ -240,6 +230,22 @@ def assign_constructions():
 
                         room.properties.energy.construction_set = new_construction_set
                         st.success("Window construction updated successfully!")
+
+                window_construction = room.properties.energy.construction_set.aperture_set.window_construction
+                st.text_input("Display name",window_construction.display_name, disabled = True, key = f"{construction_set_name}_window_construction_display_name_{room.identifier}")
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    st.text_input("Current U-value",window_construction.u_value, disabled = True,  key = f"{construction_set_name}_window_construction_u_value_{room.identifier}" )
+                with col2:
+                    st.text_input("Current SHGC",window_construction.shgc, disabled = True,  key = f"{construction_set_name}_window_construction_SHGC_{room.identifier}" )
+                with col3:
+                    st.text_input("Current Visible Transmittance",window_construction.visible_transmittance, disabled = True,  key = f"{construction_set_name}_window_construction_visible_transmittance_{room.identifier}" )
+
+                
+                window_construction_dict = room.properties.energy.construction_set.aperture_set.window_construction.to_dict()
+                update_properties_dict(room, window_construction_dict, "window_construction")
+
+                
                     
 
 
