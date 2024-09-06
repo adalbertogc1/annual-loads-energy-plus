@@ -40,17 +40,18 @@ def assign_constructions():
     if st.checkbox("Import constructions from building code?",value=False):
         # Generate a unique key for the room program selectbox using the room's identifier.
         # This ensures that each selectbox in the loop is treated as a distinct widget by Streamlit.
-        if 'selected_construction_set' not in st.session_state:
+        #if 'selected_construction_set' not in st.session_state:
+        if not st.session_state.selected_construction_set:
             st.session_state.selected_construction_set = filter_array_by_keywords(building_construction_set, ["Mass"])[0]
  
-            # Create the selectbox with the session state key
-            st.selectbox(
-                "Construction set", 
-                building_construction_set, 
-                index=building_construction_set.index(st.session_state.selected_construction_set), 
-                key='selected_construction_set', 
-                on_change=update_room_construction_set
-            )
+        # Create the selectbox with the session state key
+        st.selectbox(
+            "Construction set", 
+            building_construction_set, 
+            index=building_construction_set.index(st.session_state.selected_construction_set), 
+            key='selected_construction_set', 
+            on_change=update_room_construction_set
+        )
         
     # Iterate over each room in the Honeybee model.
     # 'st.session_state.hb_model.rooms' contains a list of rooms in the model. For each room, various properties will be displayed and can be modified.
@@ -199,7 +200,7 @@ def assign_constructions():
                 st.subheader("Roof Ceiling Set") 
                 st.write("Exterior construction")
 
-                if st.button("Need help understanding the inputs?"):
+                if st.button("Need help understanding the inputs?",key=f"roof_ceiling_set_info_{room.identifier}"):
                     st.info(
                         "Here's a quick guide to the key terms:\n\n"
                         "**R-value**: The R-value measures a material's resistance to heat flow. A higher R-value "

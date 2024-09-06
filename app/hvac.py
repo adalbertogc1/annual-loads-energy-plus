@@ -620,50 +620,50 @@ def get_IdealAirSystem(st, room):
     
     return ideal_air_system
 
-def assign_hvac_system(st, room, equipment_type):
+def get_hvac_system(st, room, equipment_type):
     if room.properties.energy.hvac:
         system_old = copy.deepcopy(room.properties.energy.hvac.to_dict()) # Use deepcopy to handle nested dicts correctly
     else:
         system_old = ""
 
     if equipment_type == "ForcedAirFurnace":
-        room.properties.energy.hvac = get_ForcedAirFurnace(st, room)
+        return get_ForcedAirFurnace(st, room)
     elif equipment_type == "PSZ":
-        room.properties.energy.hvac = get_PSZSystem(st, room)
+        return get_PSZSystem(st, room)
     elif equipment_type == "PTAC":
-        room.properties.energy.hvac = get_PTACSystem(st, room)
+        return get_PTACSystem(st, room)
     elif equipment_type == "PVAV":
-        room.properties.energy.hvac = get_PVAVSystem(st, room)
+        return get_PVAVSystem(st, room)
     elif equipment_type == "VAV":
-        room.properties.energy.hvac = get_VAVSystem(st, room)
+        return get_VAVSystem(st, room)
     elif equipment_type == "FCUwithDOAS":
-        room.properties.energy.hvac = get_FCUwithDOASSystem(st, room)
+        return get_FCUwithDOASSystem(st, room)
     elif equipment_type == "VRFwithDOAS":
-        room.properties.energy.hvac = get_VRFwithDOASSystem(st, room)
+        return get_VRFwithDOASSystem(st, room)
     elif equipment_type == "RadiantwithDOAS":
-        room.properties.energy.hvac = get_RadiantwithDOASSystem(st, room)
+        return get_RadiantwithDOASSystem(st, room)
     elif equipment_type == "WSHPwithDOAS":
-        room.properties.energy.hvac = get_WSHPwithDOASSystem(st, room)
+        return get_WSHPwithDOASSystem(st, room)
     elif equipment_type == "Baseboard":
-        room.properties.energy.hvac = get_BaseboardSystem(st, room)
+        return get_BaseboardSystem(st, room)
     elif equipment_type == "EvaporativeCooler":
-        room.properties.energy.hvac = get_EvaporativeCoolerSystem(st, room)
+        return get_EvaporativeCoolerSystem(st, room)
     elif equipment_type == "FCU":
-        room.properties.energy.hvac = get_FCUSystem(st, room)
+        return get_FCUSystem(st, room)
     elif equipment_type == "GasUnitHeater":
-        room.properties.energy.hvac = get_GasUnitHeaterSystem(st, room)
+        return get_GasUnitHeaterSystem(st, room)
     elif equipment_type == "Radiant":
-        room.properties.energy.hvac = get_RadiantSystem(st, room)
+        return get_RadiantSystem(st, room)
     elif equipment_type == "VRF":
-        room.properties.energy.hvac = get_VRFSystem(st, room)
+        return get_VRFSystem(st, room)
     elif equipment_type == "WindowAC":
-        room.properties.energy.hvac = get_WindowACSystem(st, room)
+        return get_WindowACSystem(st, room)
     elif equipment_type == "WSHP":
-        room.properties.energy.hvac = get_WSHPSystem(st, room)
+        return get_WSHPSystem(st, room)
     elif equipment_type == "Not Conditioned":
-        room.properties.energy.hvac = None
+        return None
     elif equipment_type == "IdealAirSystem":
-        room.properties.energy.hvac = get_IdealAirSystem(st,room)
+        return get_IdealAirSystem(st,room)
         
     
     if room.properties.energy.hvac:
@@ -679,16 +679,29 @@ def assign_hvac_system(st, room, equipment_type):
         st.session_state.ideal_loads = True
     else:
         st.session_state.ideal_loads = None
+    
+
 
 def iterate_rooms_hvac(st):
    
     for room in st.session_state.hb_model.rooms:
         with st.expander(f"Room identifier: {room.identifier}"):
-            st.write("HVAC Settings:")
+            
             if room.properties.energy.hvac:
                 attributes = room.properties.energy.hvac.to_dict()
             else:
                 attributes = {"type": "IdealAirSystem"}
+            
+               
+            with st.container():
+                st.write("Update HVAC System:")
+                equipment_type = st.selectbox("Type", ROOM_EQUIPMENT,index=ROOM_EQUIPMENT.index(attributes["type"]),key=f"equipment_subtype-{room.identifier}")
+
+                new_hvac_system = get_hvac_system(st, room, equipment_type)
                 
-            equipment_type = st.selectbox("Type", ROOM_EQUIPMENT,index=ROOM_EQUIPMENT.index(attributes["type"]),key=f"equipment_subtype-{room.identifier}")
-            assign_hvac_system(st, room, equipment_type)
+                if st.button("Update HVAC sytem", key=f"update_hvac_sys_{room.identifier}"):
+                    room.properties.energy.hvac = new_hvac_system
+            st.write("Curent HVAC System:")
+            if room.properties.energy.hvac:
+                attributes = room.properties.energy.hvac.to_dict()
+                st.json(attributes) 

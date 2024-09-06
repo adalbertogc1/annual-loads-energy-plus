@@ -55,6 +55,8 @@ def initialize():
         st.session_state.building_code = None
     if 'vintage_hvac' not in st.session_state:
         st.session_state.vintage_hvac = None
+    if 'selected_construction_set' not in st.session_state:
+        st.session_state.selected_construction_set = None
 
 
     # geometry wizard
