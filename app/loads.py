@@ -57,12 +57,8 @@ def iterate_rooms_and_display_properties():
             new_room_prog = st.selectbox("Room Program", room_prog, index=current_prog_index, key=selectbox_key)
             
             # Check if the user has selected a different program type from the dropdown.
-            # If so, update the room's program type to the new selection. Otherwise, keep it unchanged.
-            #if new_room_prog != room.properties.energy.program_type.identifier:
             new_program_type = program_type_by_identifier(new_room_prog)
 
-            # Duplicate the program type to ensure any modifications are made on a new instance, preserving the original object's state.
-            #new_program_type = room.properties.energy.program_type.duplicate()
             
             # Check if the new program type has a lighting object associated with it.
             if new_program_type.lighting:
@@ -191,20 +187,6 @@ def iterate_rooms_and_display_properties():
                 
                 new_program_type.ventilation = ventilation
             
-            '''
-            if new_program_type.setpoint:
-                st.divider()
-                st.write("setpoint gains")
-                setpoint = new_program_type.setpoint.duplicate()  # Duplicate the setpoint object
-                setpoint_dict = setpoint.to_dict()
-                updated_setpoint_dict = update_properties_dict(room, setpoint_dict, "setpoint")
-
-                if 'setpoint_per_area' in updated_setpoint_dict:
-                    setpoint.setpoint_per_area = updated_setpoint_dict['setpoint_per_area']
-                
-                new_program_type.setpoint = setpoint
-            '''
-
             
             # Assign the updated program type back to the original ProgramType
             if st.button("Update program", key=f"update_program_type_{room.identifier}"):
