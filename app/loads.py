@@ -45,29 +45,24 @@ def iterate_rooms_and_display_properties():
 
             # Create a text input field for editing the room's display name.
             # A unique key for the input field is generated using the room's identifier to ensure that the input field's state is maintained uniquely across different rooms.
-            room.display_name = st.text_input(f"Display name for {room.identifier}", value=room.display_name, key=f"display_name_{room.identifier}")
+            #room.display_name = st.text_input(f"Display name for {room.identifier}", value=room.display_name, key=f"display_name_{room.identifier}")
 
             # Generate a unique key for the room program selectbox using the room's identifier.
             # This ensures that each selectbox in the loop is treated as a distinct widget by Streamlit.
             selectbox_key = f"room_prog_{room.identifier}"
             # Determine the current index of the room's program type in the 'room_prog' list to set it as the default selection in the selectbox.
             # If the room's program type identifier is not in 'room_prog', default to the first item (index 0).
-            current_prog_index = room_prog.index(room.properties.energy.program_type.identifier) if room.properties.energy.program_type.identifier in room_prog else room_prog.index(room_prog[-4])#.index(random.choice(room_prog))#0
+            current_prog_index = room_prog.index(room.properties.energy.program_type.identifier) if room.properties.energy.program_type.identifier in room_prog else room_prog.index(room_prog[-1])#.index(random.choice(room_prog))#0
             # Create a selectbox for changing the room's program type, with the current program type pre-selected.
             new_room_prog = st.selectbox("Room Program", room_prog, index=current_prog_index, key=selectbox_key)
             
             # Check if the user has selected a different program type from the dropdown.
             # If so, update the room's program type to the new selection. Otherwise, keep it unchanged.
-            if new_room_prog != room.properties.energy.program_type.identifier:
-                new_program_type = program_type_by_identifier(new_room_prog)
-                room.properties.energy.program_type = new_program_type
-                st.session_state.baseline_sql_results = None
-                st.session_state.improved_sql_results = None  # reset to have results recomputed
-            else:
-                # Duplicate the program type to ensure any modifications are made on a new instance, preserving the original object's state.
-                new_program_type = room.properties.energy.program_type
-            
-            new_program_type = room.properties.energy.program_type.duplicate()
+            #if new_room_prog != room.properties.energy.program_type.identifier:
+            new_program_type = program_type_by_identifier(new_room_prog)
+
+            # Duplicate the program type to ensure any modifications are made on a new instance, preserving the original object's state.
+            #new_program_type = room.properties.energy.program_type.duplicate()
             
             # Check if the new program type has a lighting object associated with it.
             if new_program_type.lighting:
@@ -196,6 +191,7 @@ def iterate_rooms_and_display_properties():
                 
                 new_program_type.ventilation = ventilation
             
+            '''
             if new_program_type.setpoint:
                 st.divider()
                 st.write("setpoint gains")
@@ -207,10 +203,15 @@ def iterate_rooms_and_display_properties():
                     setpoint.setpoint_per_area = updated_setpoint_dict['setpoint_per_area']
                 
                 new_program_type.setpoint = setpoint
+            '''
 
+            
             # Assign the updated program type back to the original ProgramType
-            if room.properties.energy.program_type != new_program_type:
+            if st.button("Update program", key=f"update_program_type_{room.identifier}"):
                 room.properties.energy.program_type = new_program_type
-                #st.session_state.baseline_sql_results = None
                 st.session_state.improved_sql_results = None
 
+            st.write("Curent Program type:")
+            if room.properties.energy.program_type:
+                program_type_dict = room.properties.energy.program_type.to_dict()
+                st.json(program_type_dict, expanded=False) 

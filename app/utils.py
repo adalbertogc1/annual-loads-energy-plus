@@ -278,7 +278,7 @@ def get_climate_zone_bkp(container,key_="construction"):
     # 'BUILDING_TYPES' is a list of different types of buildings. The user's selection is stored in 'st.session_state.building_type'.
     # Again, '6' is the default selection index, making the seventh item in the 'BUILDING_TYPES' list the default choice.
     climate_zones_list = list(CLIMATE_ZONES)
-    in_climate_zone= container.selectbox('Climate Zone:', climate_zones_list, climate_zones_list.index(st.session_state.climate_zone)if st.session_state.climate_zone else 4, key = f"climate_zone_{key_}")
+    in_climate_zone= container.selectbox('Climate Zone:', climate_zones_list, climate_zones_list.index(st.session_state.climate_zone)if st.session_state.climate_zone else 1, key = f"climate_zone_{key_}")
     if in_climate_zone != st.session_state.climate_zone:
         st.session_state.climate_zone = in_climate_zone
         #st.session_state.baseline_sql_results = None
